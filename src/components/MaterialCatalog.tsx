@@ -60,7 +60,7 @@ export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
     const list: { room_id?: string; room_name: string }[] = [];
     if (!project) return list;
     const seen = new Set<string>();
-    for (const pm of project.materials) {
+    for (const pm of project.materials ?? []) {
       if (pm.material_id === materialId && !seen.has(pm.room_id || 'general')) {
         seen.add(pm.room_id || 'general');
         list.push({ room_id: pm.room_id, room_name: pm.room_id ? roomName(pm.room_id) : 'Geral' });
