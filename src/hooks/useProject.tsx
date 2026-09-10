@@ -30,6 +30,9 @@ export interface UseProjectResult {
   create: (input: CreateProjectInput) => Promise<Project>;
   update: (id: string, input: UpdateProjectInput) => Promise<Project>;
   simulate: (id: string, input: UpdateProjectInput) => Promise<Project>;
+  addMaterial: (id: string, materialId: string, category?: string, roomId?: string, quantity?: number) => Promise<Project>;
+  removeMaterial: (id: string, materialId: string) => Promise<Project>;
+  updateMaterial: (id: string, materialId: string, quantity: number) => Promise<Project>;
   refresh: () => void;
   reset: () => void;
   toggleTask: (phaseId: string, taskId: string, completed: boolean) => Promise<void>;
@@ -130,6 +133,42 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setProject(null);
   }, []);
 
+  const addMaterial = useCallback(async (id: string, materialId: string, category?: string, roomId?: string, quantity?: number) => {
+    try {
+      const p = await projectService.addMaterial(id, materialId, category, roomId, quantity);
+      setProject(p);
+      setError(null);
+      return p;
+    } catch (e: any) {
+      setError(e.message);
+      throw e;
+    }
+  }, []);
+
+  const removeMaterial = useCallback(async (id: string, materialId: string) => {
+    try {
+      const p = await projectService.removeMaterial(id, materialId);
+      setProject(p);
+      setError(null);
+      return p;
+    } catch (e: any) {
+      setError(e.message);
+      throw e;
+    }
+  }, []);
+
+  const updateMaterial = useCallback(async (id: string, materialId: string, quantity: number) => {
+    try {
+      const p = await projectService.updateMaterialQuantity(id, materialId, quantity);
+      setProject(p);
+      setError(null);
+      return p;
+    } catch (e: any) {
+      setError(e.message);
+      throw e;
+    }
+  }, []);
+
   const toggleTask = useCallback(async (phaseId: string, taskId: string, completed: boolean) => {
     if (!project?.id) return;
     setLoading(true);
@@ -157,6 +196,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     create,
     update,
     simulate,
+    addMaterial,
+    removeMaterial,
+    updateMaterial,
     refresh,
     reset,
     toggleTask,

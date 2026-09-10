@@ -62,3 +62,8 @@ export async function putJson<T>(path: string, body: unknown): Promise<T> {
   });
   return handle<T>(res);
 }
+
+export async function deleteJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
+  return handle<T>(res);
+}

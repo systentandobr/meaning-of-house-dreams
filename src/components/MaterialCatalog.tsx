@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from './Icon';
+import { useProject } from '../hooks/useProject';
 import { useAppStore } from '../store/appStore';
 import type { Catalog, Material } from '../domain/material';
 import type { Project } from '../domain/project';
@@ -27,6 +28,10 @@ function matchesCategory(m: Material, cat: string): boolean {
   return false;
 }
 
+function defaultCategory(m: Material): string {
+  return m.applicable_categories?.[0] || 'general';
+}
+
 function formatUnit(label: string | undefined, fallback: string): string {
   return label || fallback;
 }
@@ -38,10 +43,30 @@ function formatPrice(price?: number): string {
 
 export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
   const [activeCat, setActiveCat] = useState('all');
-  const { region, selectedMaterialIds, toggleMaterial } = useAppStore();
-  const selectedIds = new Set(project?.selected_material_ids ?? selectedMaterialIds);
+  const { addMaterial, removeMaterial } = useProject();
+  const { region, setDraftProject } = useAppStore();
+  const [loading, setLoading] = useState<string | null>(null);
 
+  const selectedIds = new Set(project?.selected_material_ids ?? []);
   const materials = catalog.materials.filter((m) => matchesCategory(m, activeCat));
+
+  async function handleToggle(m: Material) {
+    if (!project) return;
+    setLoading(m.id);
+    try {
+      if (selectedIds.has(m.id)) {
+        const p = await removeMaterial(project.id, m.id);
+        setDraftProject(p);
+      } else {
+        const p = await addMaterial(project.id, m.id, defaultCategory(m));
+        setDraftProject(p);
+      }
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setLoading(null);
+    }
+  }
 
   return (
     <section className="space-y-space-lg" id="catalogo">
@@ -147,15 +172,16 @@ export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
                   {m.origin || m.yield || m.u_value || m.acoustic || m.consumption || m.source_note || 'Referência SINAPI (protótipo)'}
                 </span>
                 <button
-                  onClick={() => toggleMaterial(m.id)}
+                  onClick={() => handleToggle(m)}
+                  disabled={loading === m.id || !project}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-label-md font-label-md font-semibold border ${
                     selected
                       ? 'bg-primary text-on-primary border-transparent shadow-sm'
                       : 'bg-surface-container text-on-surface border-outline-variant'
-                  }`}
+                  } disabled:opacity-60`}
                 >
                   <Icon name={selected ? 'check' : 'add'} className="text-[16px]" />
-                  {selected ? 'No Plano' : '+ Adicionar'}
+                  {loading === m.id ? '...' : selected ? 'No Plano' : '+ Adicionar'}
                 </button>
               </div>
             </div>

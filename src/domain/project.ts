@@ -22,7 +22,9 @@ export interface Phase {
 export interface RoomMaterial {
   category: string;
   material_id: string;
+  name: string;
   quantity: number;
+  unit: string;
   unit_price: number;
   total: number;
 }
@@ -39,6 +41,17 @@ export interface Room {
   y: number;
   features: string[];
   materials?: RoomMaterial[];
+}
+
+export interface ProjectMaterial {
+  material_id: string;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  unit_price: number;
+  total: number;
+  room_id?: string;
 }
 
 export interface RoomSchedule {
@@ -114,6 +127,8 @@ export interface Project {
 
   discovery: Discovery;
   room_schedule: RoomSchedule;
+
+  materials: ProjectMaterial[];
 
   area_m2: number;
   budget: number;

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Icon } from './Icon';
 import { useProject } from '../hooks/useProject';
 import { useAppStore } from '../store/appStore';
@@ -11,60 +11,56 @@ interface RoomEditorCardProps {
 }
 
 export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
-  const { simulate } = useProject();
-  const { setDraftProject, startSimulation, isSimulation } = useAppStore();
+  const { simulate, addMaterial, removeMaterial } = useProject();
+  const { setDraftProject, isSimulation, startSimulation } = useAppStore();
   const { catalog } = useCatalog();
   const [width, setWidth] = useState(room.width_m);
   const [depth, setDepth] = useState(room.depth_m);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const materials = catalog?.materials ?? [];
 
-  function categoryForMaterial(materialId: string) {
-    const m = materials.find((x) => x.id === materialId);
-    return m?.applicable_categories?.[0] || 'wall';
+  async function updateRoom(updates: Partial<Room>) {
+    const updatedRooms = project.room_schedule.rooms.map((r) =>
+      r.id === room.id ? { ...r, ...updates } : r
+    );
+    const schedule = { ...project.room_schedule, rooms: updatedRooms };
+    setSaving(true);
+    try {
+      const p = await simulate(project.id, { room_schedule: schedule });
+      setDraftProject(p);
+      if (!isSimulation) startSimulation(p);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function updateRoom(updates: Partial<Room>) {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const updatedRooms = project.room_schedule.rooms.map((r) =>
-        r.id === room.id ? { ...r, ...updates } : r
-      );
-      const schedule = { ...project.room_schedule, rooms: updatedRooms };
-      setSaving(true);
-      simulate(project.id, { room_schedule: schedule })
-        .then((p) => {
-          setDraftProject(p);
-          if (!isSimulation) startSimulation(p);
-        })
-        .finally(() => setSaving(false));
-    }, 400);
+  async function setDimension(w: number, d: number) {
+    await updateRoom({ width_m: w, depth_m: d, area_m2: Math.round(w * d * 100) / 100 });
   }
 
-  function setDimension(w: number, d: number) {
-    updateRoom({ width_m: w, depth_m: d, area_m2: Math.round(w * d * 100) / 100 });
+  async function assignMaterial(materialId: string) {
+    if (!materialId) return;
+    setSaving(true);
+    try {
+      const p = await addMaterial(project.id, materialId, undefined, room.id);
+      setDraftProject(p);
+      if (!isSimulation) startSimulation(p);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function assignMaterial(materialId: string) {
-    const category = categoryForMaterial(materialId);
-    const existing = room.materials?.filter((m) => m.category !== category) ?? [];
-    const price = materials.find((m) => m.id === materialId)?.prices_per_region[project.region] ?? 0;
-    const qty = category === 'floor' ? room.area_m2 : category === 'wall' ? 2 * (width + depth) * 3.0 : 1;
-    updateRoom({
-      materials: [
-        ...existing,
-        {
-          category,
-          material_id: materialId,
-          quantity: Math.round(qty * 100) / 100,
-          unit_price: price,
-          total: Math.round(qty * price * 100) / 100,
-        },
-      ],
-    });
+  async function removeRoomMaterial(materialId: string) {
+    setSaving(true);
+    try {
+      const p = await removeMaterial(project.id, materialId);
+      setDraftProject(p);
+      if (!isSimulation) startSimulation(p);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -119,27 +115,38 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
           </div>
 
           <div>
-            <label className="text-label-sm text-on-surface-variant block mb-1">Material do ambiente</label>
+            <label className="text-label-sm text-on-surface-variant block mb-1">Adicionar material ao ambiente</label>
             <select
-              value={room.materials?.[0]?.material_id || ''}
+              value=""
               onChange={(e) => e.target.value && assignMaterial(e.target.value)}
               className="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1.5 text-body-md"
             >
-              <option value="">Recomendação automática</option>
-              {materials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} — {m.applicable_categories?.join(', ') || 'wall'}
-                </option>
-              ))}
+              <option value="">Selecionar material...</option>
+              {materials
+                .filter((m) => !room.materials?.some((rm) => rm.material_id === m.id))
+                .map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} — R$ {m.prices_per_region[project.region]?.toFixed(2).replace('.', ',')} / {m.unit}
+                  </option>
+                ))}
             </select>
           </div>
 
           {room.materials && room.materials.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {room.materials.map((m, i) => (
-                <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed uppercase tracking-wide">
-                  {m.category}: {materials.find((x) => x.id === m.material_id)?.name || m.material_id}
-                </span>
+            <div className="space-y-2">
+              {room.materials.map((m) => (
+                <div key={m.material_id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-container border border-outline-variant/60">
+                  <div>
+                    <span className="text-body-sm font-semibold text-on-surface">{m.name}</span>
+                    <span className="text-label-sm text-on-surface-variant block">{m.category} • {m.quantity} {m.unit}</span>
+                  </div>
+                  <button
+                    onClick={() => removeRoomMaterial(m.material_id)}
+                    className="p-1.5 rounded-lg hover:bg-error-container text-error"
+                  >
+                    <Icon name="delete" className="text-[18px]" />
+                  </button>
+                </div>
               ))}
             </div>
           )}

@@ -1,4 +1,4 @@
-import { getJson, postJson, putJson, postJson as patchJson } from './api/httpClient';
+import { getJson, postJson, putJson, deleteJson } from './api/httpClient';
 import { API_ENDPOINTS } from './api/endpoints';
 import type { CreateProjectInput, Project, ProjectRepository, RoomSchedule } from '../domain/project';
 
@@ -47,7 +47,30 @@ class ProjectServiceImpl implements ProjectRepository {
   }
 
   async simulate(id: string, input: UpdateProjectInput): Promise<Project> {
-    return patchJson<Project>(API_ENDPOINTS.projectSimulate(id), input);
+    return postJson<Project>(API_ENDPOINTS.projectSimulate(id), input);
+  }
+
+  async addMaterial(
+    id: string,
+    materialId: string,
+    category?: string,
+    roomId?: string,
+    quantity?: number,
+  ): Promise<Project> {
+    return postJson<Project>(`${API_ENDPOINTS.projectDetail(id)}/materials`, {
+      material_id: materialId,
+      category,
+      room_id: roomId,
+      quantity,
+    });
+  }
+
+  async removeMaterial(id: string, materialId: string): Promise<Project> {
+    return deleteJson<Project>(`${API_ENDPOINTS.projectDetail(id)}/materials/${materialId}`);
+  }
+
+  async updateMaterialQuantity(id: string, materialId: string, quantity: number): Promise<Project> {
+    return putJson<Project>(`${API_ENDPOINTS.projectDetail(id)}/materials/${materialId}`, { quantity });
   }
 
   async list(): Promise<Project[]> {
