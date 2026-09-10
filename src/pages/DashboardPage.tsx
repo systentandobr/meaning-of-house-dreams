@@ -22,8 +22,10 @@ export function DashboardPage() {
   const { catalog, loading: catalogLoading, error: catalogError } = useCatalog();
   const { project, loading: projectLoading, create, toggleTask } = useProject();
   const { location } = useLocation();
-  const { region, setRegion } = useAppStore();
+  const { region, setRegion, draftProject } = useAppStore();
   const [wizardOpen, setWizardOpen] = useState(false);
+
+  const currentProject = (draftProject ?? project)!;
 
   useEffect(() => {
     if (project) {
@@ -72,34 +74,34 @@ export function DashboardPage() {
       <TopBar project={project} onNewProject={() => setWizardOpen(true)} onExport={() => {}} />
 
       <main className="flex-1 w-full max-w-content-max-width mx-auto px-gutter-desktop py-space-xl space-y-space-2xl">
-        <HeroOverview project={project} regions={catalog.regions} />
+        <HeroOverview project={currentProject} regions={catalog.regions} />
 
-        <MaterialCatalog catalog={catalog} project={project} />
+        <MaterialCatalog catalog={catalog} project={currentProject} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
-          <CBSCalculator project={project} />
-          <IGOCalculator project={project} />
+          <CBSCalculator project={currentProject} />
+          <IGOCalculator project={currentProject} />
         </div>
 
         <Timeline
-          project={project}
+          project={currentProject}
           currentPhase={currentPhase >= 0 ? currentPhase : 1}
           onToggleTask={toggleTask}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-xl">
-          <RoomSchedule project={project} />
-          <LotViewer project={project} />
+          <RoomSchedule project={currentProject} />
+          <LotViewer project={currentProject} />
         </div>
 
         <RoomBudget />
 
         <MCPConsole />
 
-        <SupplierSearch project={project} materials={catalog.materials} />
+        <SupplierSearch project={currentProject} materials={catalog.materials} />
       </main>
 
-      <ActionBar project={project} materials={catalog.materials} />
+      <ActionBar project={currentProject} materials={catalog.materials} />
 
       <ProjectWizard
         open={wizardOpen}

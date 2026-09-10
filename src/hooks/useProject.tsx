@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { projectService } from '../services/projectService';
+import type { UpdateProjectInput } from '../services/projectService';
 import type { CreateProjectInput, Project } from '../domain/project';
 import type { RoomEstimate } from '../services/projectService';
 
@@ -27,6 +28,8 @@ export interface UseProjectResult {
   loading: boolean;
   error: string | null;
   create: (input: CreateProjectInput) => Promise<Project>;
+  update: (id: string, input: UpdateProjectInput) => Promise<Project>;
+  simulate: (id: string, input: UpdateProjectInput) => Promise<Project>;
   refresh: () => void;
   reset: () => void;
   toggleTask: (phaseId: string, taskId: string, completed: boolean) => Promise<void>;
@@ -92,6 +95,35 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const update = useCallback(async (id: string, input: UpdateProjectInput) => {
+    setLoading(true);
+    try {
+      const p = await projectService.update(id, input);
+      setProject(p);
+      setError(null);
+      return p;
+    } catch (e: any) {
+      setError(e.message);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const simulate = useCallback(async (id: string, input: UpdateProjectInput) => {
+    setLoading(true);
+    try {
+      const p = await projectService.simulate(id, input);
+      setError(null);
+      return p;
+    } catch (e: any) {
+      setError(e.message);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const refresh = useCallback(() => {
     if (project?.id) loadById(project.id);
   }, [project?.id, loadById]);
@@ -126,6 +158,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     loading,
     error,
     create,
+    update,
+    simulate,
     refresh,
     reset,
     toggleTask,

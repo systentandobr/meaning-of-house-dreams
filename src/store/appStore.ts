@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Project } from '../domain/project';
 
 interface AppState {
   region: string;
@@ -6,6 +7,11 @@ interface AppState {
   selectedMaterialIds: string[];
   toggleMaterial: (id: string) => void;
   setSelectedMaterials: (ids: string[]) => void;
+  isSimulation: boolean;
+  draftProject: Project | null;
+  setDraftProject: (p: Project | null) => void;
+  startSimulation: (p: Project) => void;
+  stopSimulation: () => void;
   reset: () => void;
 }
 
@@ -22,5 +28,10 @@ export const useAppStore = create<AppState>((set) => ({
         : [...state.selectedMaterialIds, id],
     })),
   setSelectedMaterials: (ids) => set({ selectedMaterialIds: ids }),
-  reset: () => set({ region: DEFAULT_REGION, selectedMaterialIds: [] }),
+  isSimulation: false,
+  draftProject: null,
+  setDraftProject: (p) => set({ draftProject: p, isSimulation: p !== null }),
+  startSimulation: (p) => set({ draftProject: p, isSimulation: true }),
+  stopSimulation: () => set({ draftProject: null, isSimulation: false }),
+  reset: () => set({ region: DEFAULT_REGION, selectedMaterialIds: [], isSimulation: false, draftProject: null }),
 }));

@@ -19,6 +19,14 @@ export interface Phase {
   sustainability_notes: string;
 }
 
+export interface RoomMaterial {
+  category: string;
+  material_id: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+}
+
 export interface Room {
   id: string;
   name: string;
@@ -30,6 +38,7 @@ export interface Room {
   x: number;
   y: number;
   features: string[];
+  materials?: RoomMaterial[];
 }
 
 export interface RoomSchedule {
@@ -94,6 +103,9 @@ export interface Project {
   lot_width: number;
   lot_depth: number;
   lot_shape: string;
+  front_setback: number;
+  side_setback: number;
+  back_setback: number;
   lot_area_m2: number;
   built_area_m2: number;
   garden_area_m2: number;

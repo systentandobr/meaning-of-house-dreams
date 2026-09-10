@@ -1,6 +1,6 @@
-import { getJson, postJson, putJson } from './api/httpClient';
+import { getJson, postJson, putJson, postJson as patchJson } from './api/httpClient';
 import { API_ENDPOINTS } from './api/endpoints';
-import type { CreateProjectInput, Project, ProjectRepository } from '../domain/project';
+import type { CreateProjectInput, Project, ProjectRepository, RoomSchedule } from '../domain/project';
 
 export interface EstimateItem {
   description: string;
@@ -20,6 +20,19 @@ export interface RoomEstimate {
   total: number;
 }
 
+export interface UpdateProjectInput {
+  lot_width?: number;
+  lot_depth?: number;
+  lot_shape?: string;
+  front_setback?: number;
+  side_setback?: number;
+  back_setback?: number;
+  room_schedule?: RoomSchedule;
+  auto_arrange?: boolean;
+  stories?: number;
+  has_garden?: boolean;
+}
+
 class ProjectServiceImpl implements ProjectRepository {
   async create(input: CreateProjectInput): Promise<Project> {
     return postJson<Project>(API_ENDPOINTS.projects, input);
@@ -27,6 +40,14 @@ class ProjectServiceImpl implements ProjectRepository {
 
   async getById(id: string): Promise<Project> {
     return getJson<Project>(API_ENDPOINTS.projectDetail(id));
+  }
+
+  async update(id: string, input: UpdateProjectInput): Promise<Project> {
+    return putJson<Project>(API_ENDPOINTS.projectDetail(id), input);
+  }
+
+  async simulate(id: string, input: UpdateProjectInput): Promise<Project> {
+    return patchJson<Project>(API_ENDPOINTS.projectSimulate(id), input);
   }
 
   async list(): Promise<Project[]> {

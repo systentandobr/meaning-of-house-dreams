@@ -8,4 +8,5 @@ export const API_ENDPOINTS = {
   suppliersSearch: '/api/v1/suppliers/search',
   projects: '/api/v1/projects',
   projectDetail: (id: string) => `/api/v1/projects/${id}`,
+  projectSimulate: (id: string) => `/api/v1/projects/${id}/simulate`,
 } as const;
