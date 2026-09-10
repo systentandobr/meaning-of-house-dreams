@@ -1,4 +1,4 @@
-import { useState, useMemo, Suspense, lazy, useRef } from 'react';
+import { useState, useMemo, Suspense, lazy, useRef, useEffect } from 'react';
 import { Icon } from './Icon';
 import { LotSettingsDrawer } from './LotSettingsDrawer';
 import { useProject } from '../hooks/useProject';
@@ -33,12 +33,18 @@ export default function LotViewer({ project }: LotViewerProps) {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const [resizing, setResizing] = useState<string | null>(null);
+  const [localRooms, setLocalRooms] = useState<Room[] | null>(null);
+  const [pending, setPending] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { simulate } = useProject();
   const { draftProject, setDraftProject, startSimulation, isSimulation } = useAppStore();
 
   const currentProject = draftProject ?? project;
+  const rooms = localRooms ?? currentProject.room_schedule?.rooms ?? [];
+
+  useEffect(() => {
+    setLocalRooms(null);
+  }, [currentProject.room_schedule?.rooms]);
 
   const { scale, width, depth, lotX, lotY } = useMemo(() => {
     const w = Math.max(currentProject.lot_width || 12, 1);
@@ -50,7 +56,6 @@ export default function LotViewer({ project }: LotViewerProps) {
     return { scale: s, width: lw, depth: ld, lotX: (400 - lw) / 2, lotY: (300 - ld) / 2 };
   }, [currentProject.lot_width, currentProject.lot_depth]);
 
-  const rooms = currentProject.room_schedule?.rooms ?? [];
   const conflicts = useMemo(() => {
     const set = new Set<string>();
     for (let i = 0; i < rooms.length; i++) {
@@ -98,17 +103,17 @@ export default function LotViewer({ project }: LotViewerProps) {
     setSelectedRoom(room.id);
   }
 
-  function applyRoomChanges(updatedRooms: Room[]) {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const schedule = { ...currentProject.room_schedule, rooms: updatedRooms };
-      simulate(currentProject.id, { room_schedule: schedule })
-        .then((p) => {
-          setDraftProject(p);
-          if (!isSimulation) startSimulation(p);
-        })
-        .catch((e: any) => console.error(e));
-    }, 300);
+  async function sendSimulation(updatedRooms: Room[], autoArrange = false) {
+    setPending(true);
+    try {
+      const p = await simulate(currentProject.id, { room_schedule: { ...currentProject.room_schedule, rooms: updatedRooms }, auto_arrange: autoArrange });
+      setDraftProject(p);
+      if (!isSimulation) startSimulation(p);
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setPending(false);
+    }
   }
 
   function onMouseMove(e: React.MouseEvent) {
@@ -122,7 +127,7 @@ export default function LotViewer({ project }: LotViewerProps) {
       const updated = rooms.map((r) =>
         r.id === dragging ? { ...r, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 } : r
       );
-      applyRoomChanges(updated);
+      setLocalRooms(updated);
     }
     if (resizing) {
       const room = rooms.find((r) => r.id === resizing);
@@ -131,20 +136,24 @@ export default function LotViewer({ project }: LotViewerProps) {
       const d = Math.max(1, toSvgM(pos.y) - room.y);
       const updated = rooms.map((r) =>
         r.id === resizing
-          ? { ...r, width_m: Math.round(w * 10) / 10, depth_m: Math.round(d * 10) / 10 }
+          ? { ...r, width_m: Math.round(w * 10) / 10, depth_m: Math.round(d * 10) / 10, area_m2: Math.round(w * d * 100) / 100 }
           : r
       );
-      applyRoomChanges(updated);
+      setLocalRooms(updated);
     }
   }
 
   function onMouseUp() {
+    if (!dragging && !resizing) return;
+    if (localRooms) {
+      sendSimulation(localRooms);
+    }
     setDragging(null);
     setResizing(null);
   }
 
   function handleAutoArrange() {
-    applyRoomChanges(rooms);
+    sendSimulation(rooms, true);
   }
 
   return (
@@ -159,7 +168,8 @@ export default function LotViewer({ project }: LotViewerProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={handleAutoArrange}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-body-sm hover:border-primary"
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-body-sm hover:border-primary disabled:opacity-60"
           >
             <Icon name="auto_awesome_mosaic" className="text-[16px]" />
             Rearranjar

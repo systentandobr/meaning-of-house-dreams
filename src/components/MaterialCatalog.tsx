@@ -46,21 +46,57 @@ export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
   const { addMaterial, removeMaterial } = useProject();
   const { region, setDraftProject } = useAppStore();
   const [loading, setLoading] = useState<string | null>(null);
+  const [selectedRoomFor, setSelectedRoomFor] = useState<string | null>(null);
 
+  const rooms = project?.room_schedule?.rooms ?? [];
   const selectedIds = new Set(project?.selected_material_ids ?? []);
   const materials = catalog.materials.filter((m) => matchesCategory(m, activeCat));
 
-  async function handleToggle(m: Material) {
+  function roomName(roomId: string) {
+    return rooms.find((r) => r.id === roomId)?.name || 'Geral';
+  }
+
+  function uses(materialId: string): { room_id?: string; room_name: string }[] {
+    const list: { room_id?: string; room_name: string }[] = [];
+    if (!project) return list;
+    const seen = new Set<string>();
+    for (const pm of project.materials) {
+      if (pm.material_id === materialId && !seen.has(pm.room_id || 'general')) {
+        seen.add(pm.room_id || 'general');
+        list.push({ room_id: pm.room_id, room_name: pm.room_id ? roomName(pm.room_id) : 'Geral' });
+      }
+    }
+    for (const r of rooms) {
+      for (const rm of r.materials || []) {
+        if (rm.material_id === materialId && !seen.has(r.id)) {
+          seen.add(r.id);
+          list.push({ room_id: r.id, room_name: r.name });
+        }
+      }
+    }
+    return list;
+  }
+
+  async function addToPlan(m: Material, roomId?: string) {
     if (!project) return;
     setLoading(m.id);
     try {
-      if (selectedIds.has(m.id)) {
-        const p = await removeMaterial(project.id, m.id);
-        setDraftProject(p);
-      } else {
-        const p = await addMaterial(project.id, m.id, defaultCategory(m));
-        setDraftProject(p);
-      }
+      const p = await addMaterial(project.id, m.id, defaultCategory(m), roomId);
+      setDraftProject(p);
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setLoading(null);
+      setSelectedRoomFor(null);
+    }
+  }
+
+  async function removeFromPlan(m: Material) {
+    if (!project) return;
+    setLoading(m.id);
+    try {
+      const p = await removeMaterial(project.id, m.id);
+      setDraftProject(p);
     } catch (e: any) {
       console.error(e);
     } finally {
@@ -101,6 +137,9 @@ export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
           const price = m.prices_per_region[region];
           const selected = selectedIds.has(m.id);
           const score = m.bio_score ?? Math.round(m.sustainability_factor * 100);
+          const applied = uses(m.id);
+          const isChoosing = selectedRoomFor === m.id;
+
           return (
             <div
               key={m.id}
@@ -165,25 +204,69 @@ export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
                     </span>
                   </div>
                 )}
+
+                {applied.length > 0 && (
+                  <div className="pt-2 flex flex-wrap gap-1">
+                    {applied.map((u) => (
+                      <span key={u.room_id || 'geral'} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-on-primary text-[10px] font-medium">
+                        <Icon name="location_on" className="text-[12px]" />
+                        {u.room_name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
-                <span className="text-label-sm font-label-sm text-on-surface-variant">
+              <div className="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between gap-2">
+                <span className="text-label-sm font-label-sm text-on-surface-variant line-clamp-1">
                   {m.origin || m.yield || m.u_value || m.acoustic || m.consumption || m.source_note || 'Referência SINAPI (protótipo)'}
                 </span>
-                <button
-                  onClick={() => handleToggle(m)}
-                  disabled={loading === m.id || !project}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-label-md font-label-md font-semibold border ${
-                    selected
-                      ? 'bg-primary text-on-primary border-transparent shadow-sm'
-                      : 'bg-surface-container text-on-surface border-outline-variant'
-                  } disabled:opacity-60`}
-                >
-                  <Icon name={selected ? 'check' : 'add'} className="text-[16px]" />
-                  {loading === m.id ? '...' : selected ? 'No Plano' : '+ Adicionar'}
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {selected ? (
+                    <>
+                      <button
+                        onClick={() => setSelectedRoomFor(isChoosing ? null : m.id)}
+                        disabled={loading === m.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-secondary text-on-secondary text-label-sm font-semibold disabled:opacity-60"
+                      >
+                        <Icon name="add_location" className="text-[16px]" />
+                        {isChoosing ? 'Fechar' : '+ Cômodo'}
+                      </button>
+                      <button
+                        onClick={() => removeFromPlan(m)}
+                        disabled={loading === m.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-error text-on-error text-label-sm font-semibold disabled:opacity-60"
+                      >
+                        <Icon name="delete" className="text-[16px]" />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => addToPlan(m)}
+                      disabled={loading === m.id || !project}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-md font-label-md font-semibold disabled:opacity-60"
+                    >
+                      <Icon name="add" className="text-[16px]" />
+                      {loading === m.id ? '...' : 'Adicionar'}
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {isChoosing && (
+                <div className="px-space-md pb-space-md">
+                  <select
+                    value=""
+                    onChange={(e) => e.target.value && addToPlan(m, e.target.value)}
+                    className="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1.5 text-body-md"
+                  >
+                    <option value="">Selecione o cômodo...</option>
+                    {rooms.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name} ({Math.round(r.area_m2)}m²)</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           );
         })}
