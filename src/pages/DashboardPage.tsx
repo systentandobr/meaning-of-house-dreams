@@ -15,13 +15,14 @@ import { ActionBar } from '../components/ActionBar';
 import { useProject } from '../hooks/useProject';
 import { useCatalog } from '../hooks/useCatalog';
 import { useLocation } from '../hooks/useLocation';
+import { useAppStore } from '../store/appStore';
 import type { CreateProjectInput, Project } from '../domain/project';
 
 export function DashboardPage() {
   const { catalog, loading: catalogLoading, error: catalogError } = useCatalog();
   const { project, loading: projectLoading, create, toggleTask } = useProject();
   const { location } = useLocation();
-  const [region, setRegion] = useState(location?.region || 'Sudeste');
+  const { region, setRegion } = useAppStore();
   const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export function DashboardPage() {
     } else if (location?.region) {
       setRegion(location.region);
     }
-  }, [project, location]);
+  }, [project, location, setRegion]);
 
   if (catalogLoading || projectLoading) {
     return (
@@ -71,14 +72,9 @@ export function DashboardPage() {
       <TopBar project={project} onNewProject={() => setWizardOpen(true)} onExport={() => {}} />
 
       <main className="flex-1 w-full max-w-content-max-width mx-auto px-gutter-desktop py-space-xl space-y-space-2xl">
-        <HeroOverview
-          project={project}
-          region={region}
-          onRegionChange={setRegion}
-          regions={catalog.regions}
-        />
+        <HeroOverview project={project} regions={catalog.regions} />
 
-        <MaterialCatalog catalog={catalog} region={region} project={project} />
+        <MaterialCatalog catalog={catalog} project={project} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
           <CBSCalculator project={project} />
@@ -98,7 +94,7 @@ export function DashboardPage() {
 
         <RoomBudget />
 
-        <MCPConsole defaultRegion={region} />
+        <MCPConsole />
 
         <SupplierSearch project={project} />
       </main>

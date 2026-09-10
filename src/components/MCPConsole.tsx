@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { callTool } from '../services/mcpService';
+import { useAppStore } from '../store/appStore';
 
-interface MCPConsoleProps {
-  defaultRegion?: string;
-}
-
-export function MCPConsole({ defaultRegion = 'Sudeste' }: MCPConsoleProps) {
+export function MCPConsole() {
+  const { region } = useAppStore();
   const [tool, setTool] = useState('casa_search_suppliers');
-  const [args, setArgs] = useState(`{"region":"${defaultRegion}","state":"SP"}`);
+  const [args, setArgs] = useState(`{"region":"${region}","state":"SP"}`);
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
 

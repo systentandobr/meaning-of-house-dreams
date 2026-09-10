@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Icon } from './Icon';
+import { useAppStore } from '../store/appStore';
 import type { Catalog, Material } from '../domain/material';
 import type { Project } from '../domain/project';
 
 interface MaterialCatalogProps {
   catalog: Catalog;
-  region: string;
   project: Project | null;
 }
 
@@ -36,9 +36,10 @@ function formatPrice(price?: number): string {
   return `R$ ${price.toFixed(2).replace('.', ',')}`;
 }
 
-export function MaterialCatalog({ catalog, region, project }: MaterialCatalogProps) {
+export function MaterialCatalog({ catalog, project }: MaterialCatalogProps) {
   const [activeCat, setActiveCat] = useState('all');
-  const selectedIds = new Set(project?.selected_material_ids ?? []);
+  const { region, selectedMaterialIds, toggleMaterial } = useAppStore();
+  const selectedIds = new Set(project?.selected_material_ids ?? selectedMaterialIds);
 
   const materials = catalog.materials.filter((m) => matchesCategory(m, activeCat));
 
@@ -107,7 +108,8 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
                 <span className="text-label-sm font-label-sm text-on-surface-variant">
                   {m.origin || m.yield || m.u_value || m.acoustic || m.consumption || m.source_note || 'Referência SINAPI (protótipo)'}
                 </span>
-                <span
+                <button
+                  onClick={() => toggleMaterial(m.id)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-label-md font-label-md font-semibold border ${
                     selected
                       ? 'bg-primary text-on-primary border-transparent shadow-sm'
@@ -116,7 +118,7 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
                 >
                   <Icon name={selected ? 'check' : 'add'} className="text-[16px]" />
                   {selected ? 'No Plano' : '+ Adicionar'}
-                </span>
+                </button>
               </div>
             </div>
           );

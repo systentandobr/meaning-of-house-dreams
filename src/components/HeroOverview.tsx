@@ -1,12 +1,6 @@
 import { Icon } from './Icon';
+import { useAppStore } from '../store/appStore';
 import type { Project } from '../domain/project';
-
-interface HeroOverviewProps {
-  project: Project;
-  region: string;
-  onRegionChange: (r: string) => void;
-  regions: string[];
-}
 
 const REGION_LABELS: Record<string, string> = {
   Sudeste: 'Sudeste — Serra / Litoral (ZB-3)',
@@ -24,15 +18,13 @@ function cbsGrade(score: number): string {
   return 'D';
 }
 
-function igoSelo(score: number): { label: string; color: string } {
-  if (score >= 85) return { label: 'Excelente Viabilidade (Selo Ouro)', color: 'text-secondary' };
-  if (score >= 70) return { label: 'Boa Viabilidade (Selo Prata)', color: 'text-primary' };
-  if (score >= 50) return { label: 'Viabilidade Moderada (Selo Bronze)', color: 'text-on-surface-variant' };
-  return { label: 'Requer Revisão', color: 'text-error' };
+interface HeroOverviewProps {
+  project: Project;
+  regions: string[];
 }
 
-export function HeroOverview({ project, region, onRegionChange, regions }: HeroOverviewProps) {
-  const selo = igoSelo(project.igo);
+export function HeroOverview({ project, regions }: HeroOverviewProps) {
+  const { region, setRegion } = useAppStore();
   const certified = project.selected_material_ids.length;
   const co2Estimate = (project.area_m2 * 0.076).toFixed(1); // protótipo: ~76kg CO₂/m² vs alvenaria padrão
   const budgetPerM2 = project.budget > 0 ? project.budget / project.area_m2 : 0;
@@ -54,12 +46,6 @@ export function HeroOverview({ project, region, onRegionChange, regions }: HeroO
         </div>
 
         <div className="w-full lg:w-96 bg-surface-container-lowest rounded-xl border border-outline-variant p-space-md shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider flex items-center gap-1.5">
-              <Icon name="wb_sunny" className="text-[16px]" />
-              Contexto Bioclimático
-            </span>
-          </div>
           <div>
             <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">
               Região bioclimática do projeto
@@ -67,7 +53,7 @@ export function HeroOverview({ project, region, onRegionChange, regions }: HeroO
             <div className="relative">
               <select
                 value={region}
-                onChange={(e) => onRegionChange(e.target.value)}
+                onChange={(e) => setRegion(e.target.value)}
                 className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
               >
                 {regions.map((r) => (
@@ -127,8 +113,8 @@ export function HeroOverview({ project, region, onRegionChange, regions }: HeroO
           iconClass="text-secondary"
           value={`${Math.round(project.igo)}`}
           unit="/ 100"
-          trend={selo.label}
-          trendClass={selo.color}
+          trend={project.igo >= 70 ? 'Boa viabilidade' : 'Requer revisão'}
+          trendClass={project.igo >= 70 ? 'text-primary' : 'text-error'}
         />
         <KpiCard
           label="Eficiência CBS"
