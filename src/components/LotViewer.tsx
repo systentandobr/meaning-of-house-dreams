@@ -34,6 +34,7 @@ export default function LotViewer({ project }: LotViewerProps) {
   const [dragging, setDragging] = useState<string | null>(null);
   const [resizing, setResizing] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { simulate } = useProject();
   const { draftProject, setDraftProject, startSimulation, isSimulation } = useAppStore();
 
@@ -97,15 +98,17 @@ export default function LotViewer({ project }: LotViewerProps) {
     setSelectedRoom(room.id);
   }
 
-  async function applyRoomChanges(updatedRooms: Room[]) {
-    const schedule = { ...currentProject.room_schedule, rooms: updatedRooms };
-    try {
-      const p = await simulate(currentProject.id, { room_schedule: schedule });
-      setDraftProject(p);
-      if (!isSimulation) startSimulation(p);
-    } catch (e: any) {
-      console.error(e);
-    }
+  function applyRoomChanges(updatedRooms: Room[]) {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const schedule = { ...currentProject.room_schedule, rooms: updatedRooms };
+      simulate(currentProject.id, { room_schedule: schedule })
+        .then((p) => {
+          setDraftProject(p);
+          if (!isSimulation) startSimulation(p);
+        })
+        .catch((e: any) => console.error(e));
+    }, 300);
   }
 
   function onMouseMove(e: React.MouseEvent) {

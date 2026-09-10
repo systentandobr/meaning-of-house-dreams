@@ -111,7 +111,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const simulate = useCallback(async (id: string, input: UpdateProjectInput) => {
-    setLoading(true);
     try {
       const p = await projectService.simulate(id, input);
       setError(null);
@@ -119,8 +118,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       setError(e.message);
       throw e;
-    } finally {
-      setLoading(false);
     }
   }, []);
 

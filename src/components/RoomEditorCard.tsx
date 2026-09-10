@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Icon } from './Icon';
 import { useProject } from '../hooks/useProject';
 import { useAppStore } from '../store/appStore';
@@ -17,6 +17,8 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
   const [width, setWidth] = useState(room.width_m);
   const [depth, setDepth] = useState(room.depth_m);
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const materials = catalog?.materials ?? [];
 
@@ -26,14 +28,20 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
   }
 
   function updateRoom(updates: Partial<Room>) {
-    const updatedRooms = project.room_schedule.rooms.map((r) =>
-      r.id === room.id ? { ...r, ...updates } : r
-    );
-    const schedule = { ...project.room_schedule, rooms: updatedRooms };
-    simulate(project.id, { room_schedule: schedule }).then((p) => {
-      setDraftProject(p);
-      if (!isSimulation) startSimulation(p);
-    });
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const updatedRooms = project.room_schedule.rooms.map((r) =>
+        r.id === room.id ? { ...r, ...updates } : r
+      );
+      const schedule = { ...project.room_schedule, rooms: updatedRooms };
+      setSaving(true);
+      simulate(project.id, { room_schedule: schedule })
+        .then((p) => {
+          setDraftProject(p);
+          if (!isSimulation) startSimulation(p);
+        })
+        .finally(() => setSaving(false));
+    }, 400);
   }
 
   function setDimension(w: number, d: number) {
@@ -66,12 +74,15 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
           <h4 className="text-body-md font-body-md font-semibold text-on-surface">{room.name}</h4>
           <p className="text-label-sm text-on-surface-variant">{Math.round(room.area_m2)} m²</p>
         </div>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant"
-        >
-          <Icon name={open ? 'expand_less' : 'expand_more'} className="text-[20px]" />
-        </button>
+        <div className="flex items-center gap-1">
+          {saving && <span className="text-[10px] text-on-surface-variant">salvando...</span>}
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant"
+          >
+            <Icon name={open ? 'expand_less' : 'expand_more'} className="text-[20px]" />
+          </button>
+        </div>
       </div>
 
       {open && (
