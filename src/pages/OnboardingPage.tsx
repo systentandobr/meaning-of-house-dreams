@@ -92,14 +92,6 @@ export function OnboardingPage() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div
-          variants={itemVariants}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed text-label-sm font-label-sm font-semibold mb-6"
-        >
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          Arquitetura Biofílica
-        </motion.div>
-
         <motion.h1
           variants={itemVariants}
           className="text-4xl sm:text-5xl md:text-6xl font-bold text-on-surface mb-6 leading-tight"

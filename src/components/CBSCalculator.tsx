@@ -23,17 +23,10 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
     >
       <div className="flex items-center justify-between border-b border-outline-variant/80 pb-space-sm">
         <div>
-          <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
-            <Icon name="calculate" className="text-[16px]" />
-            Métricas Econômicas & Ecoeficiência
-          </div>
           <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">
             Calculadora CBS (Custo-Benefício Sustentável)
           </h2>
         </div>
-        <span className="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-label-sm font-label-sm font-bold">
-          Score {project.cbs.toFixed(1)}
-        </span>
       </div>
       <p className="text-body-md font-body-md text-on-surface-variant">
         Análise de retorno financeiro ponderado: o investimento adicional em tecnologias verdes e envoltória

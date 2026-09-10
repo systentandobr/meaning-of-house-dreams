@@ -33,8 +33,6 @@ function statusBadge(status: Phase['status']) {
 }
 
 export function Timeline({ project, currentPhase, onToggleTask }: TimelineProps) {
-  const activePhase = project.phases[currentPhase] || project.phases[0];
-
   function handleToggle(phaseId: string, taskId: string, completed: boolean) {
     onToggleTask?.(phaseId, taskId, completed);
   }
@@ -51,20 +49,10 @@ export function Timeline({ project, currentPhase, onToggleTask }: TimelineProps)
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
-            <Icon name="calendar_month" className="text-[16px]" />
-            Sequenciamento de Canteiro Vivo
-          </div>
           <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">
             Cronograma Verde & Tarefas
           </h2>
         </div>
-        <span className="text-label-md font-label-md text-primary font-semibold flex items-center gap-1">
-          <Icon name="task_alt" className="text-[18px]" />
-          {activePhase
-            ? `Etapa ${activePhase.order} • ${activePhase.name}`
-            : 'Cronograma a definir'}
-        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-md pt-space-xs">

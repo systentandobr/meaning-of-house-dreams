@@ -44,10 +44,6 @@ export function HeroOverview({ project, region, onRegionChange, regions }: HeroO
     >
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-xl">
         <div className="max-w-2xl space-y-space-xs">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-semibold mb-1">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            Projeto {project.status} • {project.city || project.region}
-          </div>
           <h1 className="text-headline-lg font-headline-lg text-on-surface font-semibold tracking-tight">
             {project.name}
           </h1>
@@ -62,9 +58,6 @@ export function HeroOverview({ project, region, onRegionChange, regions }: HeroO
             <span className="text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider flex items-center gap-1.5">
               <Icon name="wb_sunny" className="text-[16px]" />
               Contexto Bioclimático
-            </span>
-            <span className="text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full font-medium">
-              Ativo
             </span>
           </div>
           <div>

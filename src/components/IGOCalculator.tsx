@@ -43,25 +43,12 @@ export function IGOCalculator({ project, onRecalculated }: IGOCalculatorProps) {
     }
   }
 
-  const selo =
-    score >= 85
-      ? { label: 'Selo Ouro', color: 'text-secondary', bg: 'bg-secondary-fixed text-on-secondary-fixed' }
-      : score >= 70
-        ? { label: 'Selo Prata', color: 'text-primary', bg: 'bg-primary-fixed text-on-primary-fixed' }
-        : score >= 50
-          ? { label: 'Selo Bronze', color: 'text-on-surface-variant', bg: 'bg-surface-container text-on-surface' }
-          : { label: 'Requer Revisão', color: 'text-error', bg: 'bg-error-container text-on-error-container' };
-
   return (
     <section
       className="lg:col-span-5 bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-lg shadow-sm"
       id="indice-igo"
     >
       <div className="border-b border-outline-variant/80 pb-space-sm">
-        <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
-          <Icon name="tune" className="text-[16px]" />
-          Viabilidade e Governança
-        </div>
         <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">Índice IGO de Obra</h2>
       </div>
 
@@ -91,10 +78,7 @@ export function IGOCalculator({ project, onRecalculated }: IGOCalculatorProps) {
           </div>
         </div>
         <div>
-          <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-label-sm font-bold ${selo.bg}`}>
-            {selo.label}
-          </span>
-          <h4 className="text-title-md font-title-md font-semibold text-on-surface mt-1">Viabilidade do Projeto</h4>
+          <h4 className="text-title-md font-title-md font-semibold text-on-surface">Viabilidade do Projeto</h4>
           <p className="text-body-sm font-body-sm text-on-surface-variant">
             Índice de Gestão Orçamentária da Obra (protótipo educacional).
           </p>

@@ -20,10 +20,6 @@ export function TopBar({ project, onNewProject, onExport }: TopBarProps) {
               <span className="text-title-lg font-title-lg text-primary tracking-tight font-semibold">
                 Casa dos Sonhos
               </span>
-              <span className="text-label-sm font-label-sm text-secondary tracking-normal flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
-                Arquitetura Bioclimática
-              </span>
             </div>
           </div>
           <div className="h-6 w-px bg-outline-variant hidden lg:block"></div>

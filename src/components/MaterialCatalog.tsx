@@ -46,10 +46,6 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
     <section className="space-y-space-lg" id="catalogo">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
-            <Icon name="layers" className="text-[16px]" />
-            Curadoria Biofílica
-          </div>
           <h2 className="text-headline-md font-headline-md font-semibold text-on-surface">
             Catálogo de Materiais de Baixo Impacto
           </h2>
@@ -78,7 +74,6 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
         {materials.map((m) => {
           const price = m.prices_per_region[region];
           const selected = selectedIds.has(m.id);
-          const score = m.bio_score ?? Math.round(m.sustainability_factor * 100);
           return (
             <div
               key={m.id}
@@ -92,15 +87,6 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
-                    <Icon name="eco" className="text-[14px]" fill />
-                    Score Bio: {score}/100
-                  </div>
-                  {m.display_category && (
-                    <div className="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
-                      {m.display_category}
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="h-24 w-full bg-surface-container border-b border-outline-variant/40" />
@@ -115,34 +101,6 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
                   </span>
                 </div>
                 <p className="text-body-sm font-body-sm text-on-surface-variant">{m.description}</p>
-
-                {(m.badges && m.badges.length > 0) ? (
-                  <div className="pt-2 flex flex-wrap items-center gap-2">
-                    {m.badges.map((badge, i) => (
-                      <span
-                        key={i}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm font-medium ${
-                          i === 0
-                            ? 'bg-tertiary-fixed text-on-tertiary-fixed'
-                            : 'bg-secondary-fixed text-on-secondary-fixed'
-                        }`}
-                      >
-                        <Icon name={badge.icon} className="text-[14px]" />
-                        {badge.label}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="pt-2 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
-                      <Icon name="check_circle" className="text-[14px]" />
-                      CO₂: {m.co2_kg_per_unit} kg/un
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
-                      Vida útil: {m.lifespan_years} anos
-                    </span>
-                  </div>
-                )}
               </div>
 
               <div className="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">

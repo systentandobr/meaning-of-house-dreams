@@ -100,7 +100,7 @@ export function DashboardPage() {
 
         <MCPConsole defaultRegion={region} />
 
-        <SupplierSearch project={project} materials={catalog.materials} />
+        <SupplierSearch project={project} />
       </main>
 
       <ActionBar project={project} materials={catalog.materials} />
