@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { projectService } from '../services/projectService';
 import type { CreateProjectInput, Project } from '../domain/project';
 import type { RoomEstimate } from '../services/projectService';
@@ -33,7 +33,9 @@ export interface UseProjectResult {
   estimate: () => Promise<RoomEstimate[]>;
 }
 
-export function useProject(): UseProjectResult {
+const ProjectContext = createContext<UseProjectResult | null>(null);
+
+export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,5 +121,24 @@ export function useProject(): UseProjectResult {
     return res.estimates;
   }, [project?.id, project?.region]);
 
-  return { project, loading, error, create, refresh, reset, toggleTask, estimate };
+  const value: UseProjectResult = {
+    project,
+    loading,
+    error,
+    create,
+    refresh,
+    reset,
+    toggleTask,
+    estimate,
+  };
+
+  return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
+}
+
+export function useProject(): UseProjectResult {
+  const ctx = useContext(ProjectContext);
+  if (!ctx) {
+    throw new Error('useProject must be used within a ProjectProvider');
+  }
+  return ctx;
 }

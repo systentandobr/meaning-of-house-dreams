@@ -202,12 +202,18 @@ export function ProjectWizard({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-background/50 backdrop-blur-sm">
       <div className="w-full max-w-2xl h-[80vh] flex flex-col bg-surface rounded-2xl border border-outline-variant shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between p-space-md border-b border-outline-variant/80 bg-surface-container-low">
-          <div>
-            <h2 className="text-headline-md font-headline-md font-semibold text-on-surface">Criar Projeto dos Sonhos</h2>
-            <p className="text-body-sm font-body-sm text-on-surface-variant">Uma conversa para desenhar a casa ideal no terreno certo.</p>
+        <div className="flex items-start justify-between p-space-md border-b border-outline-variant/80 bg-surface-container-low gap-4">
+          <div className="flex-1 min-w-0">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-transparent text-headline-md font-headline-md font-semibold text-on-surface border-b border-dashed border-outline-variant/50 focus:border-primary focus:outline-none pb-1 truncate"
+              placeholder="Nome do projeto"
+              aria-label="Nome do projeto"
+            />
+            <p className="text-body-sm font-body-sm text-on-surface-variant mt-1">Uma conversa para desenhar a casa ideal no terreno certo.</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant flex-shrink-0">
             <Icon name="close" className="text-[20px]" />
           </button>
         </div>
@@ -215,8 +221,10 @@ export function ProjectWizard({
         <div className="flex-1 overflow-y-auto p-space-md space-y-space-md bg-surface-bright">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-2xl p-space-md text-body-md font-body-md ${
-                msg.from === 'user' ? 'bg-primary text-on-primary rounded-tr-sm' : 'bg-surface-container-low text-on-surface rounded-tl-sm border border-outline-variant'
+              <div className={`max-w-[85%] rounded-2xl p-space-md ${
+                msg.from === 'user'
+                  ? 'bg-primary text-on-primary rounded-tr-sm text-body-md font-body-md'
+                  : 'bg-surface-container-low text-on-surface rounded-tl-sm border border-outline-variant text-body-sm font-body-sm'
               }`}>
                 {msg.text}
                 {msg.chips && (
@@ -235,7 +243,7 @@ export function ProjectWizard({
           <div ref={endRef} />
 
           {step === 0 && (
-            <StepDream name={name} setName={setName} dreamText={dreamText} setDreamText={setDreamText} onSubmit={handleDreamSubmit} />
+            <StepDream dreamText={dreamText} setDreamText={setDreamText} onSubmit={handleDreamSubmit} />
           )}
           {step === 1 && (
             <StepLot
@@ -266,13 +274,11 @@ export function ProjectWizard({
   );
 }
 
-function StepDream({ name, setName, dreamText, setDreamText, onSubmit }: any) {
+function StepDream({ dreamText, setDreamText, onSubmit }: any) {
   return (
     <div className="space-y-3">
-      <Field label="Nome do projeto">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-body-md" />
-      </Field>
-      <Field label="Conte seu sonho em texto livre">
+      <label className="block">
+        <span className="block text-body-sm text-on-surface-variant mb-1">Conte seu sonho em texto livre</span>
         <textarea
           value={dreamText}
           onChange={(e) => setDreamText(e.target.value)}
@@ -280,7 +286,7 @@ function StepDream({ name, setName, dreamText, setDreamText, onSubmit }: any) {
           rows={4}
           className="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-body-md resize-none"
         />
-      </Field>
+      </label>
       <div className="flex flex-wrap gap-2">
         {['Sustentabilidade', 'Ventilação natural', 'Energia solar', 'Cisterna', 'Jardim nativo', 'Madeira FSC'].map((tag) => (
           <button
