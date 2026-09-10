@@ -1,0 +1,173 @@
+
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Casa dos Sonhos — Painel de Planejamento Bioclimático &amp; Sustentável</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with CDN and plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed": "#ffdcbc",
+            "on-tertiary-fixed": "#171e10",
+            "surface-bright": "#fff8f1",
+            "surface-container-high": "#efe7dd",
+            "tertiary-container": "#6f7765",
+            "on-primary": "#ffffff",
+            "on-primary-fixed": "#171d10",
+            "inverse-surface": "#33302a",
+            "surface": "#fff8f1",
+            "secondary-container": "#fecb97",
+            "on-error": "#ffffff",
+            "on-background": "#1e1b15",
+            "error-container": "#ffdad6",
+            "surface-tint": "#5a614f",
+            "primary": "#585e4d",
+            "primary-fixed": "#dee5cf",
+            "tertiary": "#575f4e",
+            "on-tertiary-fixed-variant": "#414939",
+            "surface-container-lowest": "#ffffff",
+            "primary-container": "#707765",
+            "secondary-fixed-dim": "#efbd8a",
+            "secondary": "#7c572d",
+            "primary-fixed-dim": "#c2c9b4",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed-dim": "#c1c9b5",
+            "surface-container": "#f4ede3",
+            "on-surface-variant": "#454840",
+            "surface-dim": "#e0d9cf",
+            "inverse-primary": "#c2c9b4",
+            "background": "#fff8f1",
+            "on-primary-fixed-variant": "#424939",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#2c1700",
+            "tertiary-fixed": "#dde6d0",
+            "outline": "#767870",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed-variant": "#614018",
+            "surface-variant": "#e9e1d8",
+            "on-primary-container": "#f9ffea",
+            "on-tertiary-container": "#f9ffec",
+            "error": "#ba1a1a",
+            "surface-container-low": "#faf2e9",
+            "inverse-on-surface": "#f7f0e6",
+            "on-secondary-container": "#79542a",
+            "surface-container-highest": "#e9e1d8",
+            "outline-variant": "#c6c7be",
+            "on-surface": "#1e1b15"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-2xl": "3rem",
+            "space-md": "1rem",
+            "margin-tablet": "2rem",
+            "gutter-desktop": "2rem",
+            "space-3xl": "4.5rem",
+            "space-sm": "0.75rem",
+            "space-2xs": "0.25rem",
+            "space-lg": "1.5rem",
+            "content-max-width": "84rem",
+            "margin-desktop": "3rem",
+            "gutter-mobile": "1rem",
+            "margin-mobile": "1.25rem",
+            "space-xs": "0.5rem",
+            "gutter-tablet": "1.5rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Manrope"],
+            "display": ["Manrope"],
+            "headline-sm": ["Manrope"],
+            "title-lg": ["Manrope"],
+            "metric-display": ["Manrope"],
+            "body-sm": ["Manrope"],
+            "headline-lg-mobile": ["Manrope"],
+            "body-md": ["Manrope"],
+            "display-mobile": ["Manrope"],
+            "headline-lg": ["Manrope"],
+            "headline-md-mobile": ["Manrope"],
+            "label-sm": ["Manrope"],
+            "label-md": ["Manrope"],
+            "title-md": ["Manrope"],
+            "headline-md": ["Manrope"]
+          },
+          "fontSize": {
+            "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display": ["3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.025em", "fontWeight": "700" }],
+            "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "title-lg": ["1.125rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "metric-display": ["2.5rem", { "lineHeight": "3rem", "letterSpacing": "-0.03em", "fontWeight": "800" }],
+            "body-sm": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-lg-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-md": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md-mobile": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.025em", "fontWeight": "600" }],
+            "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "600" }],
+            "title-md": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-md": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: #fff8f1;
+      color: #1e1b15;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Subtle warm ambient diffusion shadows mimicking raked sunlight on mortar */
+    .tactile-card {
+      box-shadow: 0 1px 3px 0 rgba(74, 70, 63, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tactile-card:hover {
+      box-shadow: 0 12px 30px -6px rgba(74, 70, 63, 0.08), 0 4px 12px -2px rgba(88, 96, 79, 0.05);
+      transform: translateY(-2px);
+    }
+    .subtle-grain {
+      background-image: radial-gradient(#e9e1d8 0.75px, transparent 0.75px);
+      background-size: 16px 16px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #585e4d;
+      border: 2px solid #fff8f1;
+      box-shadow: 0 2px 5px rgba(74, 70, 63, 0.25);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #c2c9b4;
+      border-radius: 9999px;
+    }
+  </style>

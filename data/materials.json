@@ -1,0 +1,218 @@
+{
+  "version": "2024.1-prototype",
+  "unit_prices_reference_date": "2024-09",
+  "currency": "BRL",
+  "source_notes": "Preços aproximados para prototipagem. Fonte: médias derivadas do SINAPI/IBGE e do BuscadorSINAPI. Devem ser validados antes de uso em orçamento real.",
+  "regions": ["Norte", "Nordeste", "Sudeste", "Sul", "Centro-Oeste"],
+  "materials": [
+    {
+      "id": "tijolo-ecologico",
+      "name": "Tijolo Ecológico (solo-cimento)",
+      "unit": "unidade",
+      "description": "Tijolo ecológico prensado, baixo consumo de energia, alta durabilidade. Ideal para regiões quentes e secas.",
+      "category": "alvenaria",
+      "prices_per_region": {
+        "Norte": 2.60,
+        "Nordeste": 2.45,
+        "Sudeste": 2.10,
+        "Sul": 2.20,
+        "Centro-Oeste": 2.35
+      },
+      "sustainability_factor": 0.85,
+      "co2_kg_per_unit": 0.12,
+      "lifespan_years": 80,
+      "climate_compatibility": ["quente", "seco", "umido"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "tijolo-ceramico",
+      "name": "Tijolo Cerâmico Baiano (8 furos)",
+      "unit": "unidade",
+      "description": "Tijolo cerâmico convencional de alta disponibilidade no mercado.",
+      "category": "alvenaria",
+      "prices_per_region": {
+        "Norte": 0.95,
+        "Nordeste": 0.80,
+        "Sudeste": 0.75,
+        "Sul": 0.85,
+        "Centro-Oeste": 0.90
+      },
+      "sustainability_factor": 0.60,
+      "co2_kg_per_unit": 0.25,
+      "lifespan_years": 70,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "bloco-concreto",
+      "name": "Bloco de Concreto (14x19x39 cm)",
+      "unit": "unidade",
+      "description": "Bloco vazado de concreto para alvenaria de vedação e estrutural.",
+      "category": "alvenaria",
+      "prices_per_region": {
+        "Norte": 4.10,
+        "Nordeste": 3.80,
+        "Sudeste": 3.50,
+        "Sul": 3.60,
+        "Centro-Oeste": 3.70
+      },
+      "sustainability_factor": 0.55,
+      "co2_kg_per_unit": 0.45,
+      "lifespan_years": 80,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "cimento-cpii",
+      "name": "Cimento Portland Composto CP II (50 kg)",
+      "unit": "saco",
+      "description": "Cimento Portland composto de uso geral.",
+      "category": "fundacao-estrutura",
+      "prices_per_region": {
+        "Norte": 42.00,
+        "Nordeste": 39.00,
+        "Sudeste": 36.00,
+        "Sul": 38.00,
+        "Centro-Oeste": 40.00
+      },
+      "sustainability_factor": 0.45,
+      "co2_kg_per_unit": 5.00,
+      "lifespan_years": 100,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "aco-ca50",
+      "name": "Aço CA-50 para Concreto Armado",
+      "unit": "kg",
+      "description": "Vergalhão de aço CA-50 para armaduras de concreto.",
+      "category": "fundacao-estrutura",
+      "prices_per_region": {
+        "Norte": 8.50,
+        "Nordeste": 8.20,
+        "Sudeste": 7.80,
+        "Sul": 8.00,
+        "Centro-Oeste": 8.30
+      },
+      "sustainability_factor": 0.50,
+      "co2_kg_per_unit": 2.50,
+      "lifespan_years": 100,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "madeira-cedrinho",
+      "name": "Madeira de Cedrinho (m³)",
+      "unit": "m³",
+      "description": "Madeira maciça para coberturas e revestimentos.",
+      "category": "cobertura-revestimento",
+      "prices_per_region": {
+        "Norte": 4500.00,
+        "Nordeste": 4200.00,
+        "Sudeste": 4000.00,
+        "Sul": 4300.00,
+        "Centro-Oeste": 4100.00
+      },
+      "sustainability_factor": 0.70,
+      "co2_kg_per_unit": -0.20,
+      "lifespan_years": 60,
+      "climate_compatibility": ["umido", "chuvoso"],
+      "source_note": "Estimativa de mercado"
+    },
+    {
+      "id": "telha-ceramica",
+      "name": "Telha Cerâmica Francesa",
+      "unit": "m²",
+      "description": "Telha cerâmica para cobertura residencial.",
+      "category": "cobertura-revestimento",
+      "prices_per_region": {
+        "Norte": 48.00,
+        "Nordeste": 45.00,
+        "Sudeste": 42.00,
+        "Sul": 44.00,
+        "Centro-Oeste": 46.00
+      },
+      "sustainability_factor": 0.65,
+      "co2_kg_per_unit": 2.00,
+      "lifespan_years": 40,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "piso-ceramico",
+      "name": "Piso Cerâmico Branco 45x45 cm",
+      "unit": "m²",
+      "description": "Revestimento cerâmico para pisos internos.",
+      "category": "revestimento",
+      "prices_per_region": {
+        "Norte": 58.00,
+        "Nordeste": 55.00,
+        "Sudeste": 50.00,
+        "Sul": 52.00,
+        "Centro-Oeste": 54.00
+      },
+      "sustainability_factor": 0.60,
+      "co2_kg_per_unit": 5.00,
+      "lifespan_years": 30,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "tinta-acrilica",
+      "name": "Tinta Acrílica Premium (18 L)",
+      "unit": "lata",
+      "description": "Tinta acrílica para áreas internas e externas.",
+      "category": "revestimento",
+      "prices_per_region": {
+        "Norte": 165.00,
+        "Nordeste": 155.00,
+        "Sudeste": 145.00,
+        "Sul": 150.00,
+        "Centro-Oeste": 158.00
+      },
+      "sustainability_factor": 0.50,
+      "co2_kg_per_unit": 2.50,
+      "lifespan_years": 10,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "Estimativa de mercado"
+    },
+    {
+      "id": "areia-fina",
+      "name": "Areia Fina (m³)",
+      "unit": "m³",
+      "description": "Areia fina para argamassa e reboco.",
+      "category": "agregados",
+      "prices_per_region": {
+        "Norte": 95.00,
+        "Nordeste": 85.00,
+        "Sudeste": 80.00,
+        "Sul": 82.00,
+        "Centro-Oeste": 88.00
+      },
+      "sustainability_factor": 0.70,
+      "co2_kg_per_unit": 0.05,
+      "lifespan_years": 100,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    },
+    {
+      "id": "brita-1",
+      "name": "Brita 1 (m³)",
+      "unit": "m³",
+      "description": "Brita 1 para concreto e contra-piso.",
+      "category": "agregados",
+      "prices_per_region": {
+        "Norte": 110.00,
+        "Nordeste": 100.00,
+        "Sudeste": 95.00,
+        "Sul": 98.00,
+        "Centro-Oeste": 105.00
+      },
+      "sustainability_factor": 0.65,
+      "co2_kg_per_unit": 0.05,
+      "lifespan_years": 100,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "SINAPI aproximado"
+    }
+  ]
+}

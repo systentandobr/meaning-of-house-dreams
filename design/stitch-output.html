@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Casa dos Sonhos — Painel de Planejamento Bioclimático &amp; Sustentável</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with CDN and plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed": "#ffdcbc",
+            "on-tertiary-fixed": "#171e10",
+            "surface-bright": "#fff8f1",
+            "surface-container-high": "#efe7dd",
+            "tertiary-container": "#6f7765",
+            "on-primary": "#ffffff",
+            "on-primary-fixed": "#171d10",
+            "inverse-surface": "#33302a",
+            "surface": "#fff8f1",
+            "secondary-container": "#fecb97",
+            "on-error": "#ffffff",
+            "on-background": "#1e1b15",
+            "error-container": "#ffdad6",
+            "surface-tint": "#5a614f",
+            "primary": "#585e4d",
+            "primary-fixed": "#dee5cf",
+            "tertiary": "#575f4e",
+            "on-tertiary-fixed-variant": "#414939",
+            "surface-container-lowest": "#ffffff",
+            "primary-container": "#707765",
+            "secondary-fixed-dim": "#efbd8a",
+            "secondary": "#7c572d",
+            "primary-fixed-dim": "#c2c9b4",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed-dim": "#c1c9b5",
+            "surface-container": "#f4ede3",
+            "on-surface-variant": "#454840",
+            "surface-dim": "#e0d9cf",
+            "inverse-primary": "#c2c9b4",
+            "background": "#fff8f1",
+            "on-primary-fixed-variant": "#424939",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#2c1700",
+            "tertiary-fixed": "#dde6d0",
+            "outline": "#767870",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed-variant": "#614018",
+            "surface-variant": "#e9e1d8",
+            "on-primary-container": "#f9ffea",
+            "on-tertiary-container": "#f9ffec",
+            "error": "#ba1a1a",
+            "surface-container-low": "#faf2e9",
+            "inverse-on-surface": "#f7f0e6",
+            "on-secondary-container": "#79542a",
+            "surface-container-highest": "#e9e1d8",
+            "outline-variant": "#c6c7be",
+            "on-surface": "#1e1b15"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-2xl": "3rem",
+            "space-md": "1rem",
+            "margin-tablet": "2rem",
+            "gutter-desktop": "2rem",
+            "space-3xl": "4.5rem",
+            "space-sm": "0.75rem",
+            "space-2xs": "0.25rem",
+            "space-lg": "1.5rem",
+            "content-max-width": "84rem",
+            "margin-desktop": "3rem",
+            "gutter-mobile": "1rem",
+            "margin-mobile": "1.25rem",
+            "space-xs": "0.5rem",
+            "gutter-tablet": "1.5rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Manrope"],
+            "display": ["Manrope"],
+            "headline-sm": ["Manrope"],
+            "title-lg": ["Manrope"],
+            "metric-display": ["Manrope"],
+            "body-sm": ["Manrope"],
+            "headline-lg-mobile": ["Manrope"],
+            "body-md": ["Manrope"],
+            "display-mobile": ["Manrope"],
+            "headline-lg": ["Manrope"],
+            "headline-md-mobile": ["Manrope"],
+            "label-sm": ["Manrope"],
+            "label-md": ["Manrope"],
+            "title-md": ["Manrope"],
+            "headline-md": ["Manrope"]
+          },
+          "fontSize": {
+            "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display": ["3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.025em", "fontWeight": "700" }],
+            "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "title-lg": ["1.125rem", { "lineHeight": "1.625rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "metric-display": ["2.5rem", { "lineHeight": "3rem", "letterSpacing": "-0.03em", "fontWeight": "800" }],
+            "body-sm": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-lg-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-md": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md-mobile": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.025em", "fontWeight": "600" }],
+            "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "600" }],
+            "title-md": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-md": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: #fff8f1;
+      color: #1e1b15;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Subtle warm ambient diffusion shadows mimicking raked sunlight on mortar */
+    .tactile-card {
+      box-shadow: 0 1px 3px 0 rgba(74, 70, 63, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tactile-card:hover {
+      box-shadow: 0 12px 30px -6px rgba(74, 70, 63, 0.08), 0 4px 12px -2px rgba(88, 96, 79, 0.05);
+      transform: translateY(-2px);
+    }
+    .subtle-grain {
+      background-image: radial-gradient(#e9e1d8 0.75px, transparent 0.75px);
+      background-size: 16px 16px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #585e4d;
+      border: 2px solid #fff8f1;
+      box-shadow: 0 2px 5px rgba(74, 70, 63, 0.25);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #c2c9b4;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased selection:bg-secondary-fixed selection:text-secondary">
+<!-- TOP APP BAR (Shared Component: TopNavBar execution) -->
+<header class="sticky top-0 z-40 bg-surface-container-low border-b border-outline-variant shadow-sm transition-all duration-200">
+<div class="flex justify-between items-center w-full px-gutter-desktop max-w-content-max-width mx-auto h-20">
+<!-- Brand & Project Selector -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-xs cursor-pointer group">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-sm group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div class="flex flex-col">
+<span class="text-title-lg font-title-lg text-primary tracking-tight font-semibold">Casa dos Sonhos</span>
+<span class="text-label-sm font-label-sm text-secondary tracking-normal flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+              Arquitetura Bioclimática
+            </span>
+</div>
+</div>
+<div class="h-6 w-px bg-outline-variant hidden lg:block"></div>
+<!-- Current Project Badge Selector -->
+<div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant hover:border-outline transition-colors cursor-pointer text-body-sm font-body-sm text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="home_work">home_work</span>
+<span class="font-semibold text-on-surface">Residência Jardim Botânico</span>
+<span class="text-on-surface-variant font-normal">— 185m²</span>
+<span class="material-symbols-outlined text-[16px] text-outline ml-1" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Navigation Links (Web Execution) -->
+<nav class="hidden md:flex items-center gap-space-lg">
+<a class="border-b-2 border-primary text-primary font-title-md text-title-md pb-1 flex items-center gap-1" href="#visao-geral">
+          Visão Geral
+        </a>
+<a class="text-on-surface-variant hover:text-on-surface font-title-md text-title-md pb-1 transition-colors" href="#catalogo">
+          Catálogo de Materiais
+        </a>
+<a class="text-on-surface-variant hover:text-on-surface font-title-md text-title-md pb-1 transition-colors" href="#calculadora-cbs">
+          Calculadora CBS
+        </a>
+<a class="text-on-surface-variant hover:text-on-surface font-title-md text-title-md pb-1 transition-colors" href="#indice-igo">
+          Índice IGO
+        </a>
+<a class="text-on-surface-variant hover:text-on-surface font-title-md text-title-md pb-1 transition-colors" href="#cronograma">
+          Cronograma
+        </a>
+</nav>
+<!-- Trailing Actions & Profile -->
+<div class="flex items-center gap-space-sm">
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors relative" title="Notificações Bioclimáticas">
+<span class="material-symbols-outlined text-[22px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary"></span>
+</button>
+<button class="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container border border-outline-variant hover:border-secondary transition-all text-label-md font-label-md text-on-surface font-medium">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="bookmark">bookmark</span>
+          Salvar Rascunho
+        </button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-tertiary-container transition-all duration-200 active:scale-[0.98] shadow-sm text-label-md font-label-md font-semibold">
+<span class="material-symbols-outlined text-[18px]" data-icon="file_download">file_download</span>
+<span>Exportar Plano</span>
+</button>
+<!-- Architect Profile Avatar -->
+<div class="flex items-center pl-2 border-l border-outline-variant ml-1">
+<div class="w-9 h-9 rounded-full bg-secondary-container border border-secondary text-on-secondary-container flex items-center justify-center font-bold text-label-md font-label-md shadow-inner" title="Foto de perfil do arquiteto responsável">
+            ML
+          </div>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN DASHBOARD CONTENT -->
+<main class="flex-1 w-full max-w-content-max-width mx-auto px-gutter-desktop py-space-xl space-y-space-2xl">
+<!-- 1. HERO SECTION: Welcoming Architectural Banner & Region Context Bar -->
+<section class="relative overflow-hidden rounded-xl bg-surface-container-low border border-outline-variant p-space-xl subtle-grain" id="visao-geral">
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-xl">
+<!-- Welcoming Statement -->
+<div class="max-w-2xl space-y-space-xs">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-semibold mb-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Diretrizes Passivas 2024.2 • Certificação Lixo Zero em Obra
+          </div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface font-semibold tracking-tight">
+            Construa o seu refúgio com alma, equilíbrio e menor pegada.
+          </h1>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-xl">
+            Planejamento integrado de materiais de baixo impacto, cálculo de eficiência bioclimática e orçamento consciente para a sua casa sustentável.
+          </p>
+</div>
+<!-- Bioclimatic Region Selector Card -->
+<div class="w-full lg:w-96 bg-surface-container-lowest rounded-xl border border-outline-variant p-space-md shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]" data-icon="wb_sunny">wb_sunny</span>
+              Contexto Bioclimático
+            </span>
+<span class="text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full font-medium">Ativo</span>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Região bioclimática do projeto</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option selected="">Sudeste — Serra / Litoral (ZB-3)</option>
+<option>Centro-Oeste — Cerrado (ZB-4 / ZB-5)</option>
+<option>Sul — Subtropical (ZB-1 / ZB-2)</option>
+<option>Nordeste — Semiárido / Costa (ZB-6 / ZB-8)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-outline" data-icon="unfold_more">unfold_more</span>
+</div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container text-label-sm font-label-sm text-on-surface-variant flex flex-col gap-1 border border-outline-variant/60">
+<div class="flex items-center justify-between">
+<span class="font-medium text-on-surface">Zona Bioclimática ZB-3</span>
+<span class="text-primary font-semibold">Ventilação Cruzada Otimizada</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant text-[12px] pt-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary" data-icon="sunny">sunny</span>
+                Incidência Solar: 5.4 kWh/m²
+              </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary" data-icon="water_drop">water_drop</span>
+                UR Média: 68%
+              </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick KPI Cards Grid -->
+<div class="mt-space-xl pt-space-lg border-t border-outline-variant/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant tactile-card flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="text-label-md font-label-md">Pegada CO₂ Estimada</span>
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="co2">co2</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-md font-headline-md font-bold text-on-surface">14.2</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">ton CO₂ eq</span>
+</div>
+<div class="mt-1 inline-flex items-center gap-1 text-label-sm font-label-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_down">trending_down</span>
+<span>-42% vs. alvenaria padrão</span>
+</div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant tactile-card flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="text-label-md font-label-md">Índice IGO Consolidado</span>
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="verified">verified</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-md font-headline-md font-bold text-on-surface">91</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">/ 100</span>
+</div>
+<div class="mt-1 inline-flex items-center gap-1 text-label-sm font-label-sm font-semibold text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Excelente Viabilidade (Selo Ouro)</span>
+</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant tactile-card flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="text-label-md font-label-md">Eficiência CBS</span>
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="energy_savings_leaf">energy_savings_leaf</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-md font-headline-md font-bold text-primary">A+</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Ciclo de 15 Anos</span>
+</div>
+<div class="mt-1 inline-flex items-center gap-1 text-label-sm font-label-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="savings">savings</span>
+<span>Payback estimado: 4,2 anos</span>
+</div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant tactile-card flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="text-label-md font-label-md">Materiais Certificados</span>
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="nature_people">nature_people</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-md font-headline-md font-bold text-on-surface">88%</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">da especificação</span>
+</div>
+<div class="mt-1 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. INTERACTIVE MATERIAL CATALOG (Grid of Rich Architectural Cards) -->
+<section class="space-y-space-lg" id="catalogo">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="layers">layers</span>
+            Curadoria Biofílica
+          </div>
+<h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Catálogo de Materiais de Baixo Impacto</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Composição autêntica de materiais nativos, certificados e de alta inércia térmica para o clima brasileiro.</p>
+</div>
+<!-- Category Filters -->
+<div class="flex flex-wrap items-center gap-2 p-1.5 bg-surface-container-low rounded-xl border border-outline-variant">
+<button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md font-semibold bg-primary text-on-primary shadow-sm">Todos</button>
+<button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Estrutura &amp; Paredes</button>
+<button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Acabamentos &amp; Pisos</button>
+<button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Isolamento &amp; Cobertura</button>
+<button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Esquadrias</button>
+</div>
+</div>
+<!-- 6 Material Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg">
+<!-- CARD 1: Tijolo Ecológico -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Close up architectural detail of warm compressed earth blocks and eco soil cement bricks stacked harmoniously in an airy Brazilian modernist patio with sun raked light, textured sand surfaces, and subtle green sage leaf shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjMaN9IDf9utRDX9gEKjD8lVYTHxY4yyBqzqsKb3Bsl-w8ZwywoYKw6PkTPC88RusNnqSKfCIus0fqbTGLw_Ir1HxQmLEOQHzxXOYR25QPz4KqdQgWZ9EGTlpa2c-7APLH6n5m_aWKa29U12xqYIvJYqfYEP1WoeAEZ4RAId_-D6VICtJEJIH4H9_EYpkEVr9mQsJ1oX5S4K_xx23Pwp1a_2ZFiVlWAUUR61QlmSY3TcmBV9rc0oOjnZbpSOf8t1FSnOdKv8LVYqOE"/>
+<div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+                Score Bio: 96/100
+              </div>
+<div class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                Paredes &amp; Vedações
+              </div>
+</div>
+<div class="p-space-md space-y-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-title-lg font-title-lg font-semibold text-on-surface">Tijolo Ecológico de Solo-Cimento</h3>
+<span class="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">R$ 1,85 <span class="text-body-sm font-normal text-on-surface-variant">/ un</span></span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Cura por prensagem mecânica sem queima em fornos. Excelente inércia térmica e redução drástica de argamassa de assentamento.</p>
+<div class="pt-2 flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                  -70% CO₂ em Fabricação
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
+                  Massa Térmica Alta
+                </span>
+</div>
+</div>
+</div>
+<div class="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Origem: Cunha, SP (120km)</span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-primary hover:text-on-primary transition-all text-label-md font-label-md font-semibold border border-outline-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+              No Plano
+            </button>
+</div>
+</div>
+<!-- CARD 2: Madeira Tauari FSC -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Rich natural grain texture of certified Brazilian Tauari solid wood slats installed on a sunlit minimalist veranda ceiling, honey timber reflections, warm tactile surface with subtle shadows and organic modern ambiance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKAGFOy-DHqTblTEwRMES9jE8UoZ0qCuxEWbc6O14Jff_S2KBXYzF6QYYaUmDvR7oaTL9shRY_uLoNUqClDkf3PZej1gIgglGWoDMYyx4NEKRxxhaUZwv0-ZZl8mWl-RwF1Xj4-2y_eVAkoe_y9updoYUoWaZWWbugizXEWof9Ll4gqoD86qlFPyniLqcJGIzvoHhyiMd7NU3QGW4ePBg5w_IMJEVVwaZUQ6Ur-5HDLjyoHZ7Ii49d2OoaIEXj6I2hOK3KzDKgHvoY"/>
+<div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+                Score Bio: 92/100
+              </div>
+<div class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                Estrutura &amp; Forros
+              </div>
+</div>
+<div class="p-space-md space-y-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-title-lg font-title-lg font-semibold text-on-surface">Madeira Tauari FSC Certificada</h3>
+<span class="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">R$ 240 <span class="text-body-sm font-normal text-on-surface-variant">/ m²</span></span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Manejo florestal sustentável rastreado via satélite. Armazenamento perene de carbono e acabamento a óleo de linho cru.</p>
+<div class="pt-2 flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="forest">forest</span>
+                  Carbono Negativo
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
+                  FSC Brasil
+                </span>
+</div>
+</div>
+</div>
+<div class="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Origem: Manejo Paragominas, PA</span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary transition-all text-label-md font-label-md font-semibold shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+              Adicionado
+            </button>
+</div>
+</div>
+<!-- CARD 3: Tinta Mineral de Silicato -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Tactile warm off white plastered mineral wall with hand troweled texture and soft natural morning light casting deep organic shadows, minimalist Brazilian residential architecture interior." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqaQV4RSN11zSbxYuAFSyNKQJoVk3fOgKrLQjQNlgH0nhQadSk480pCuSqAr2w3y_gQ7WmvTHvd1dHUsXVER_j1Tj7L_Zvzgvg6RrAdKos8mPU0YHcieoCciMDhMGSORGl8cEM5r2R9Mup0jg4PRKN0qCf8q8QNjvqCWQzngW9egsEkiAgfg2VrI5ZiEMXYywkq6DBfjTuNnVR8AahQJR2C1kD5koiFHnptGjPMIKopgS3PO9Bfv2_sX4oih-OTlSyUKnhp-0mwvvT"/>
+<div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+                Score Bio: 98/100
+              </div>
+<div class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                Revestimentos
+              </div>
+</div>
+<div class="p-space-md space-y-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-title-lg font-title-lg font-semibold text-on-surface">Tinta Mineral de Silicato &amp; Cal</h3>
+<span class="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">R$ 88 <span class="text-body-sm font-normal text-on-surface-variant">/ lata</span></span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Fórmula respirável que petrifica com o substrato. Isenta de compostos orgânicos voláteis (0% VOC) e antimofo natural.</p>
+<div class="pt-2 flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="air">air</span>
+                  0% VOC • Respirável
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface text-label-sm font-label-sm font-medium border border-outline-variant">
+                  Pigmento Natural
+                </span>
+</div>
+</div>
+</div>
+<div class="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Rendimento: 14m²/L</span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-primary hover:text-on-primary transition-all text-label-md font-label-md font-semibold border border-outline-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+              + Adicionar
+            </button>
+</div>
+</div>
+<!-- CARD 4: Telhado Verde Modular -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Lush extensive green roof on an architectural tropical modern house with native sedum, bromeliads and ornamental grasses overlooking misty hills, soft warm sky and exposed raw concrete accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOvRAgiek3ZVSyH6TZhNxosZG9yfVt_ZYMoCU-Biwpf51vFSPJIj2PGqOPixjVDOGyotLrUeF6eRhvo9GeMtStcnpzgqfzEk0NNBTgP0a30YwI7PCRd5YjbwblIwW1ILldr4nybEKmQ3YE4uNuywVQOYnvHajSzlm2XWJJo1ka6j4rx1A4_7vMLOxqMtKqA4i9CsvjIw43EKU29Wwl7FfaIPSBpuJm4galpe-iiJJCYvMlIqjNWlJPC9i_vbpp-jdMwinVR24vSJ4O"/>
+<div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+                Score Bio: 94/100
+              </div>
+<div class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                Isolamento &amp; Cobertura
+              </div>
+</div>
+<div class="p-space-md space-y-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-title-lg font-title-lg font-semibold text-on-surface">Telhado Verde Modular Extensivo</h3>
+<span class="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">R$ 165 <span class="text-body-sm font-normal text-on-surface-variant">/ m²</span></span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Bandejas modulares pré-cultivadas com espécies nativas de baixa rega. Atenua picos de calor e retarda escoamento pluvial em 75%.</p>
+<div class="pt-2 flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="thermostat">thermostat</span>
+                  Conforto Térmico +4°C
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
+                  Retenção Hídrica
+                </span>
+</div>
+</div>
+</div>
+<div class="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Peso Saturado: 60kg/m²</span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary transition-all text-label-md font-label-md font-semibold shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+              Adicionado
+            </button>
+</div>
+</div>
+<!-- CARD 5: Esquadria Demolição Low-E -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Elegant floor to ceiling pivot glass door framed in reclaimed dark Brazilian Peroba wood, opening towards a sun soaked courtyard garden with rattan armchairs and stone pavers." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2pMtuqKHHkZ1uZXOiiU7PukNEBymN2fLd1x7P7L1nXXwP1nu6JT7vrNuuMKZsFvIqZGL22_-FdrG1mh3ytlZfhGdhq5bc0zEXykQRyTXmlREP-5EAc9ccFbcL2HKJswbbQiOoEmTkKjAru4iGYJaL_qXPc-cd-JzrjLeNMn0M50QWoH513SAPnt5JBGB52hJJKtZBWysb-5KI9gHB6r8HCjJ0KFiyuq8NoRZifvspEhpZ_vavMxeIbtryd5nCxxq8BZDJRD1HZ0cS"/>
+<div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+                Score Bio: 89/100
+              </div>
+<div class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                Esquadrias &amp; Aberturas
+              </div>
+</div>
+<div class="p-space-md space-y-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-title-lg font-title-lg font-semibold text-on-surface">Madeira de Demolição &amp; Vidro Low-E</h3>
+<span class="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">R$ 720 <span class="text-body-sm font-normal text-on-surface-variant">/ m²</span></span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Peroba-rosa recuperada com tratamento vegetal e vidro duplo com camada de controle solar térmico para redução de ganho solar.</p>
+<div class="pt-2 flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="recycling">recycling</span>
+                  100% Madeira Reutilizada
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface text-label-sm font-label-sm font-medium border border-outline-variant">
+                  U-value 1.8
+                </span>
+</div>
+</div>
+</div>
+<div class="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Atenuação Acústica: 36dB</span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-primary hover:text-on-primary transition-all text-label-md font-label-md font-semibold border border-outline-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+              + Adicionar
+            </button>
+</div>
+</div>
+<!-- CARD 6: Argamassa Argila & Sisal -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between">
+<div>
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Artisanal clay and organic natural sisal fiber plaster sample being applied on a warm earth toned wall with traditional wooden float in a serene bright Brazilian workshop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARWqHpx8kSsEHCxY2oMPjGjH32Fa1DO4wAXQuoAcKmg8y2KhUVCtrRwV2bmq_HixkblmnmZDXpxN0m5M2tpAa2fKo_5R4_JAmXW92NwDML3mIqC6JL63dWsHpRahLlB3rWtPlcAtagncylcVB7KblzReenFmzJ7uobTgr5TZYY4T4O7EqwdQ3xREaNkEGGx4Zm6htJdMudmfN-R_oRJnNrulsuVgdENLUevHtPreM4sYZHDp2hSYdBYZALT9bibVeheXLj1qe12xm6"/>
+<div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+                Score Bio: 95/100
+              </div>
+<div class="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                Argamassas &amp; Assentamento
+              </div>
+</div>
+<div class="p-space-md space-y-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-title-lg font-title-lg font-semibold text-on-surface">Argamassa de Argila &amp; Fibras Sisal</h3>
+<span class="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">R$ 54 <span class="text-body-sm font-normal text-on-surface-variant">/ 20kg</span></span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Mistura geotécnica tradicional com fibras naturais que evitam microfissuras. Estabilização higroscópica passiva do ambiente.</p>
+<div class="pt-2 flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="spa">spa</span>
+                  Biodegradável • Sem cimento
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
+                  Fibra da Bahia
+                </span>
+</div>
+</div>
+</div>
+<div class="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Consumo: 4,5 kg/m²</span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-primary hover:text-on-primary transition-all text-label-md font-label-md font-semibold border border-outline-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+              + Adicionar
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. DUAL COMPUTATION PANELS: CBS & IGO -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- CBS CALCULATOR PANEL (7 Columns) -->
+<section class="lg:col-span-7 bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-lg shadow-sm" id="calculadora-cbs">
+<div class="flex items-center justify-between border-b border-outline-variant/80 pb-space-sm">
+<div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="calculate">calculate</span>
+              Métricas Econômicas &amp; Ecoeficiência
+            </div>
+<h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Calculadora CBS (Custo-Benefício Sustentável)</h2>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-label-sm font-label-sm font-bold">
+            Ciclo 15 Anos
+          </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+          Análise de retorno financeiro ponderado: o investimento adicional em tecnologias verdes e envoltória passiva amortizado pela economia operacional contínua.
+        </p>
+<!-- Graphic Financial Balance Visualizer -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant space-y-4">
+<div class="flex flex-col sm:flex-row justify-between sm:items-baseline gap-2">
+<div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Economia Operacional Estimada (15 anos)</span>
+<div class="text-metric-display font-metric-display text-primary leading-tight font-extrabold">
+                R$ 138.400
+              </div>
+</div>
+<div class="sm:text-right">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Payback Estimado</span>
+<div class="text-headline-md font-headline-md text-secondary font-bold">
+                4,2 anos
+              </div>
+</div>
+</div>
+<!-- Interactive Breakdown Visual Bars -->
+<div class="space-y-3 pt-2">
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
+                  Geração Solar Fotovoltaica + Ventilação Passiva
+                </span>
+<span class="font-bold text-on-surface">R$ 74.200 (53%)</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 53%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary inline-block"></span>
+                  Captação Pluvial &amp; Reúso de Águas Cinzas
+                </span>
+<span class="font-bold text-on-surface">R$ 38.600 (28%)</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 28%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container inline-block"></span>
+                  Durabilidade &amp; Menor Manutenção de Materiais Naturais
+                </span>
+<span class="font-bold text-on-surface">R$ 25.600 (19%)</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2.5 overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 19%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Comparative Comparison Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+<div class="p-3.5 rounded-xl bg-surface-container border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-on-surface-variant block">Alvenaria Convencional</span>
+<div class="text-title-lg font-title-lg font-bold text-on-surface mt-0.5">R$ 3.850 / m²</div>
+<p class="text-body-sm font-body-sm text-error mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="north_east">north_east</span>
+              Custo energético +65% em 10 anos
+            </p>
+</div>
+<div class="p-3.5 rounded-xl bg-tertiary-fixed/40 border border-primary-fixed">
+<span class="text-label-sm font-label-sm text-primary font-semibold block">Projeto Casa dos Sonhos</span>
+<div class="text-title-lg font-title-lg font-bold text-primary mt-0.5">R$ 4.120 / m²</div>
+<p class="text-body-sm font-body-sm text-primary font-medium mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="south_east">south_east</span>
+              Amortização acelerada em 50 meses
+            </p>
+</div>
+</div>
+</section>
+<!-- IGO CALCULATOR PANEL (5 Columns) -->
+<section class="lg:col-span-5 bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-lg shadow-sm" id="indice-igo">
+<div class="border-b border-outline-variant/80 pb-space-sm">
+<div class="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="tune">tune</span>
+            Viabilidade e Governança
+          </div>
+<h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Índice IGO de Obra</h2>
+</div>
+<!-- Circular Score Indicator Gauge -->
+<div class="flex items-center gap-space-lg bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant">
+<div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-primary transition-all duration-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" id="igo-stroke" stroke="currentColor" stroke-dasharray="91, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<div class="absolute flex flex-col items-center justify-center">
+<span class="text-headline-md font-headline-md font-extrabold text-on-surface" id="igo-score-display">91</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Score</span>
+</div>
+</div>
+<div>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-bold">Selo Ouro</span>
+<h4 class="text-title-md font-title-md font-semibold text-on-surface mt-1">Viabilidade Plena</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Risco de atraso mitigado por mão de obra local e insumos nativos regionais.</p>
+</div>
+</div>
+<!-- Interactive Sliders Controls -->
+<div class="space-y-space-md">
+<!-- Slider 1: Área Construída -->
+<div>
+<div class="flex justify-between text-label-md font-label-md text-on-surface mb-1.5">
+<span>Área Construída Total</span>
+<span class="font-bold text-primary" id="val-area">185 m²</span>
+</div>
+<input class="w-full bg-outline-variant h-2 rounded-lg cursor-pointer" id="slider-area" max="450" min="80" oninput="updateIGO()" type="range" value="185"/>
+<div class="flex justify-between text-[11px] text-on-surface-variant mt-1 font-medium">
+<span>80 m² (Chalé)</span>
+<span>250 m²</span>
+<span>450 m² (Quinta)</span>
+</div>
+</div>
+<!-- Slider 2: Autossuficiência -->
+<div>
+<div class="flex justify-between text-label-md font-label-md text-on-surface mb-1.5">
+<span>Autossuficiência (Energia + Água)</span>
+<span class="font-bold text-primary" id="val-auto">75%</span>
+</div>
+<input class="w-full bg-outline-variant h-2 rounded-lg cursor-pointer" id="slider-auto" max="100" min="30" oninput="updateIGO()" type="range" value="75"/>
+<div class="flex justify-between text-[11px] text-on-surface-variant mt-1 font-medium">
+<span>30% (Híbrido)</span>
+<span>75% (Zero Carbon)</span>
+<span>100% (Off-Grid)</span>
+</div>
+</div>
+<!-- Slider 3: Mão de Obra Local -->
+<div>
+<div class="flex justify-between text-label-md font-label-md text-on-surface mb-1.5">
+<span>Mão de Obra e Ofícios Locais</span>
+<span class="font-bold text-primary" id="val-local">85%</span>
+</div>
+<input class="w-full bg-outline-variant h-2 rounded-lg cursor-pointer" id="slider-local" max="100" min="0" oninput="updateIGO()" type="range" value="85"/>
+<div class="flex justify-between text-[11px] text-on-surface-variant mt-1 font-medium">
+<span>Regional restrito</span>
+<span>Comunidade ativa (&gt;80%)</span>
+</div>
+</div>
+<!-- Stepper 4: Margem de Contingência -->
+<div class="pt-2 flex items-center justify-between bg-surface-container p-3 rounded-lg border border-outline-variant">
+<div>
+<span class="text-label-md font-label-md font-semibold text-on-surface block">Margem de Contingência Verde</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Reserva para flutuações e clima</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-7 h-7 rounded bg-surface-container-lowest border border-outline-variant flex items-center justify-center font-bold text-on-surface hover:bg-surface-variant transition-colors" onclick="adjustContingency(-1)">-</button>
+<span class="text-label-md font-label-md font-bold text-on-surface w-8 text-center" id="val-contingency">8%</span>
+<button class="w-7 h-7 rounded bg-surface-container-lowest border border-outline-variant flex items-center justify-center font-bold text-on-surface hover:bg-surface-variant transition-colors" onclick="adjustContingency(1)">+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- 4. GREEN TIMELINE (Cronograma Verde Preview) -->
+<section class="bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-md shadow-sm" id="cronograma">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_month">calendar_month</span>
+            Sequenciamento de Canteiro Vivo
+          </div>
+<h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Cronograma Verde &amp; Gestão de Resíduos</h2>
+</div>
+<span class="text-label-md font-label-md text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="task_alt">task_alt</span>
+          Etapa 2 em Execução (Fundações Ecoeficientes)
+        </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md pt-space-xs">
+<!-- Phase 1 (Completed) -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest border border-primary/30 relative">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed text-[11px] font-bold uppercase">Concluído</span>
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h4 class="text-title-md font-title-md font-bold text-on-surface">1. Sondagem &amp; Licenciamento</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Estudo solar bioclimático e preservação topográfica das espécies nativas do lote.</p>
+<span class="text-[12px] text-primary font-semibold block mt-3">Mês 01 - 02</span>
+</div>
+<!-- Phase 2 (Active) -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest border-2 border-secondary relative shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container text-[11px] font-bold uppercase">Em Andamento</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-ping"></span>
+</div>
+<h4 class="text-title-md font-title-md font-bold text-on-surface">2. Fundação &amp; Cisterna</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Sapata corrida em pedra ciclópica e tanque para captação de 15.000L de água pluvial.</p>
+<span class="text-[12px] text-secondary font-bold block mt-3">Mês 03 - 04 (Atual)</span>
+</div>
+<!-- Phase 3 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant opacity-80">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[11px] font-bold uppercase">Planejado</span>
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="schedule">schedule</span>
+</div>
+<h4 class="text-title-md font-title-md font-bold text-on-surface">3. Alvenaria Solo-Cimento</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Levantamento com tijolos modulares e vergas vazadas para fluxo contínuo de brisa.</p>
+<span class="text-[12px] text-on-surface-variant block mt-3">Mês 05 - 07</span>
+</div>
+<!-- Phase 4 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant opacity-80">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[11px] font-bold uppercase">Planejado</span>
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="schedule">schedule</span>
+</div>
+<h4 class="text-title-md font-title-md font-bold text-on-surface">4. Cobertura &amp; Painéis</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Instalação do telhado verde modular e arranjo de 12 placas solares fotovoltaicas.</p>
+<span class="text-[12px] text-on-surface-variant block mt-3">Mês 08 - 10</span>
+</div>
+</div>
+</section>
+</main>
+<!-- ACTION DRAWER / STICKY BOTTOM BAR (Shared Component Context Execution) -->
+<aside class="sticky bottom-0 z-30 bg-surface-container-low/95 backdrop-blur-md border-t border-outline-variant py-3 px-gutter-desktop shadow-md">
+<div class="w-full max-w-content-max-width mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+</div>
+<div>
+<div class="text-title-md font-title-md font-semibold text-on-surface">
+            Plano Residência Jardim Botânico pronto para emissão técnica
+          </div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">
+            32 especificações validadas • Emissões compensadas • R$ 518.200 orçados
+          </div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm w-full sm:w-auto justify-end">
+<button class="px-4 py-2 rounded-xl bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors text-label-md font-label-md font-medium">
+          Salvar Prévia
+        </button>
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-tertiary-container transition-all duration-200 active:scale-[0.98] shadow-sm text-label-md font-label-md font-bold">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+<span>Exportar Plano Completo (.PDF &amp; BIM)</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- FOOTER (Shared Component: Footer Execution) -->
+<footer class="bg-surface-container border-t border-outline-variant py-space-lg mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-gutter-desktop max-w-content-max-width mx-auto gap-space-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="eco">eco</span>
+<span class="text-title-md font-title-md text-secondary font-semibold">Casa dos Sonhos</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant ml-2">
+          © 2024 Casa dos Sonhos — Arquitetura Biofílica e Construção Sustentável. Todos os direitos reservados.
+        </span>
+</div>
+<div class="flex flex-wrap items-center gap-space-md text-label-sm font-label-sm">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#diretrizes">Diretrizes de Sustentabilidade</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#emissoes">Base de Emissões CO2</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#suporte">Suporte Técnico</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#privacidade">Privacidade</a>
+</div>
+</div>
+</footer>
+<!-- Light Vanilla Script for Real-time IGO & CBS Dynamic Interactivity -->
+<script>
+    let contingency = 8;
+
+    function updateIGO() {
+      const area = parseInt(document.getElementById('slider-area').value);
+      const auto = parseInt(document.getElementById('slider-auto').value);
+      const local = parseInt(document.getElementById('slider-local').value);
+
+      document.getElementById('val-area').innerText = `${area} m²`;
+      document.getElementById('val-auto').innerText = `${auto}%`;
+      document.getElementById('val-local').innerText = `${local}%`;
+
+      // Formula for realistic composite IGO Score
+      let score = Math.round(
+        (auto * 0.35) + 
+        (local * 0.40) + 
+        ((450 - area) / 370 * 15) + 
+        (contingency * 1.2)
+      );
+      if (score > 99) score = 99;
+      if (score < 40) score = 40;
+
+      const scoreEl = document.getElementById('igo-score-display');
+      const strokeEl = document.getElementById('igo-stroke');
+
+      if (scoreEl && strokeEl) {
+        scoreEl.innerText = score;
+        strokeEl.setAttribute('stroke-dasharray', `${score}, 100`);
+      }
+    }
+
+    function adjustContingency(delta) {
+      contingency += delta;
+      if (contingency < 2) contingency = 2;
+      if (contingency > 20) contingency = 20;
+      document.getElementById('val-contingency').innerText = `${contingency}%`;
+      updateIGO();
+    }
+  </script>
+</body></html>
