@@ -1,5 +1,5 @@
 {
-  "version": "2024.1-prototype",
+  "version": "2024.2-prototype",
   "unit_prices_reference_date": "2024-09",
   "currency": "BRL",
   "source_notes": "Preços aproximados para prototipagem. Fonte: médias derivadas do SINAPI/IBGE e do BuscadorSINAPI. Devem ser validados antes de uso em orçamento real.",
@@ -7,10 +7,12 @@
   "materials": [
     {
       "id": "tijolo-ecologico",
-      "name": "Tijolo Ecológico (solo-cimento)",
+      "name": "Tijolo Ecológico de Solo-Cimento",
       "unit": "unidade",
-      "description": "Tijolo ecológico prensado, baixo consumo de energia, alta durabilidade. Ideal para regiões quentes e secas.",
+      "unit_label": "un",
+      "description": "Cura por prensagem mecânica sem queima em fornos. Excelente inércia térmica e redução drástica de argamassa de assentamento.",
       "category": "alvenaria",
+      "display_category": "Paredes & Vedações",
       "prices_per_region": {
         "Norte": 2.60,
         "Nordeste": 2.45,
@@ -22,7 +24,154 @@
       "co2_kg_per_unit": 0.12,
       "lifespan_years": 80,
       "climate_compatibility": ["quente", "seco", "umido"],
-      "source_note": "SINAPI aproximado"
+      "source_note": "SINAPI aproximado",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuAjMaN9IDf9utRDX9gEKjD8lVYTHxY4yyBqzqsKb3Bsl-w8ZwywoYKw6PkTPC88RusNnqSKfCIus0fqbTGLw_Ir1HxQmLEOQHzxXOYR25QPz4KqdQgWZ9EGTlpa2c-7APLH6n5m_aWKa29U12xqYIvJYqfYEP1WoeAEZ4RAId_-D6VICtJEJIH4H9_EYpkEVr9mQsJ1oX5S4K_xx23Pwp1a_2ZFiVlWAUUR61QlmSY3TcmBV9rc0oOjnZbpSOf8t1FSnOdKv8LVYqOE",
+      "bio_score": 96,
+      "badges": [
+        { "icon": "check_circle", "label": "-70% CO₂ em Fabricação" },
+        { "icon": "thermostat", "label": "Massa Térmica Alta" }
+      ],
+      "origin": "Cunha, SP (120km)"
+    },
+    {
+      "id": "madeira-tauari-fsc",
+      "name": "Madeira Tauari FSC Certificada",
+      "unit": "m²",
+      "unit_label": "m²",
+      "description": "Manejo florestal sustentável rastreado via satélite. Armazenamento perene de carbono e acabamento a óleo de linho cru.",
+      "category": "cobertura-revestimento",
+      "display_category": "Estrutura & Forros",
+      "prices_per_region": {
+        "Norte": 260.00,
+        "Nordeste": 250.00,
+        "Sudeste": 240.00,
+        "Sul": 245.00,
+        "Centro-Oeste": 255.00
+      },
+      "sustainability_factor": 0.92,
+      "co2_kg_per_unit": -0.30,
+      "lifespan_years": 60,
+      "climate_compatibility": ["umido", "chuvoso"],
+      "source_note": "Estimativa de mercado",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuCKAGFOy-DHqTblTEwRMES9jE8UoZ0qCuxEWbc6O14Jff_S2KBXYzF6QYYaUmDvR7oaTL9shRY_uLoNUqClDkf3PZej1gIgglGWoDMYyx4NEKRxxhaUZwv0-ZZl8mWl-RwF1Xj4-2y_eVAkoe_y9updoYUoWaZWWbugizXEWof9Ll4gqoD86qlFPyniLqcJGIzvoHhyiMd7NU3QGW4ePBg5w_IMJEVVwaZUQ6Ur-5HDLjyoHZ7Ii49d2OoaIEXj6I2hOK3KzDKgHvoY",
+      "bio_score": 92,
+      "badges": [
+        { "icon": "forest", "label": "Carbono Negativo" },
+        { "icon": "verified", "label": "FSC Brasil" }
+      ],
+      "origin": "Manejo Paragominas, PA"
+    },
+    {
+      "id": "tinta-mineral-silicato",
+      "name": "Tinta Mineral de Silicato & Cal",
+      "unit": "lata",
+      "unit_label": "lata",
+      "description": "Fórmula respirável que petrifica com o substrato. Isenta de compostos orgânicos voláteis (0% VOC) e antimofo natural.",
+      "category": "revestimento",
+      "display_category": "Revestimentos",
+      "prices_per_region": {
+        "Norte": 95.00,
+        "Nordeste": 90.00,
+        "Sudeste": 88.00,
+        "Sul": 92.00,
+        "Centro-Oeste": 94.00
+      },
+      "sustainability_factor": 0.95,
+      "co2_kg_per_unit": 0.80,
+      "lifespan_years": 15,
+      "climate_compatibility": ["quente", "seco", "umido", "chuvoso"],
+      "source_note": "Estimativa de mercado",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuAqaQV4RSN11zSbxYuAFSyNKQJoVk3fOgKrLQjQNlgH0nhQadSk480pCuSqAr2w3y_gQ7WmvTHvd1dHUsXVER_j1Tj7L_Zvzgvg6RrAdKos8mPU0YHcieoCciMDhMGSORGl8cEM5r2R9Mup0jg4PRKN0qCf8q8QNjvqCWQzngW9egsEkiAgfg2VrI5ZiEMXYywkq6DBfjTuNnVR8AahQJR2C1kD5koiFHnptGjPMIKopgS3PO9Bfv2_sX4oih-OTlSyUKnhp-0mwvvT",
+      "bio_score": 98,
+      "badges": [
+        { "icon": "air", "label": "0% VOC • Respirável" },
+        { "icon": "palette", "label": "Pigmento Natural" }
+      ],
+      "yield": "14m²/L"
+    },
+    {
+      "id": "telhado-verde-modular",
+      "name": "Telhado Verde Modular Extensivo",
+      "unit": "m²",
+      "unit_label": "m²",
+      "description": "Bandejas modulares pré-cultivadas com espécies nativas de baixa rega. Atenua picos de calor e retarda escoamento pluvial em 75%.",
+      "category": "cobertura-revestimento",
+      "display_category": "Isolamento & Cobertura",
+      "prices_per_region": {
+        "Norte": 175.00,
+        "Nordeste": 170.00,
+        "Sudeste": 165.00,
+        "Sul": 168.00,
+        "Centro-Oeste": 172.00
+      },
+      "sustainability_factor": 0.94,
+      "co2_kg_per_unit": -1.50,
+      "lifespan_years": 30,
+      "climate_compatibility": ["quente", "umido", "chuvoso"],
+      "source_note": "Estimativa de mercado",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuBOvRAgiek3ZVSyH6TZhNxosZG9yfVt_ZYMoCU-Biwpf51vFSPJIj2PGqOPixjVDOGyotLrUeF6eRhvo9GeMtStcnpzgqfzEk0NNBTgP0a30YwI7PCRd5YjbwblIwW1ILldr4nybEKmQ3YE4uNuywVQOYnvHajSzlm2XWJJo1ka6j4rx1A4_7vMLOxqMtKqA4i9CsvjIw43EKU29Wwl7FfaIPSBpuJm4galpe-iiJJCYvMlIqjNWlJPC9i_vbpp-jdMwinVR24vSJ4O",
+      "bio_score": 94,
+      "badges": [
+        { "icon": "thermostat", "label": "Conforto Térmico +4°C" },
+        { "icon": "water_drop", "label": "Retenção Hídrica" }
+      ],
+      "weight": "Peso Saturado: 60kg/m²"
+    },
+    {
+      "id": "esquadria-demolicao-lowe",
+      "name": "Madeira de Demolição & Vidro Low-E",
+      "unit": "m²",
+      "unit_label": "m²",
+      "description": "Peroba-rosa recuperada com tratamento vegetal e vidro duplo com camada de controle solar térmico para redução de ganho solar.",
+      "category": "esquadria",
+      "display_category": "Esquadrias & Aberturas",
+      "prices_per_region": {
+        "Norte": 750.00,
+        "Nordeste": 730.00,
+        "Sudeste": 720.00,
+        "Sul": 735.00,
+        "Centro-Oeste": 740.00
+      },
+      "sustainability_factor": 0.89,
+      "co2_kg_per_unit": -0.50,
+      "lifespan_years": 50,
+      "climate_compatibility": ["quente", "seco", "umido"],
+      "source_note": "Estimativa de mercado",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuD2pMtuqKHHkZ1uZXOiiU7PukNEBymN2fLd1x7P7L1nXXwP1nu6JT7vrNuuMKZsFvIqZGL22_-FdrG1mh3ytlZfhGdhq5bc0zEXykQRyTXmlREP-5EAc9ccFbcL2HKJswbbQiOoEmTkKjAru4iGYJaL_qXPc-cd-JzrjLeNMn0M50QWoH513SAPnt5JBGB52hJJKtZBWysb-5KI9gHB6r8HCjJ0KFiyuq8NoRZifvspEhpZ_vavMxeIbtryd5nCxxq8BZDJRD1HZ0cS",
+      "bio_score": 89,
+      "badges": [
+        { "icon": "recycling", "label": "100% Madeira Reutilizada" },
+        { "icon": "trending_down", "label": "U-value 1.8" }
+      ],
+      "acoustic": "Atenuação Acústica: 36dB"
+    },
+    {
+      "id": "argamassa-argila-sisal",
+      "name": "Argamassa de Argila & Fibras Sisal",
+      "unit": "saco",
+      "unit_label": "20kg",
+      "description": "Mistura geotécnica tradicional com fibras naturais que evitam microfissuras. Estabilização higroscópica passiva do ambiente.",
+      "category": "argamassa",
+      "display_category": "Argamassas & Assentamento",
+      "prices_per_region": {
+        "Norte": 58.00,
+        "Nordeste": 55.00,
+        "Sudeste": 54.00,
+        "Sul": 56.00,
+        "Centro-Oeste": 57.00
+      },
+      "sustainability_factor": 0.95,
+      "co2_kg_per_unit": 0.10,
+      "lifespan_years": 40,
+      "climate_compatibility": ["quente", "seco", "umido"],
+      "source_note": "Estimativa de mercado",
+      "image_url": "https://lh3.googleusercontent.com/aida-public/AB6AXuARWqHpx8kSsEHCxY2oMPjGjH32Fa1DO4wAXQuoAcKmg8y2KhUVCtrRwV2bmq_HixkblmnmZDXpxN0m5M2tpAa2fKo_5R4_JAmXW92NwDML3mIqC6JL63dWsHpRahLlB3rWtPlcAtagncylcVB7KblzReenFmzJ7uobTgr5TZYY4T4O7EqwdQ3xREaNkEGGx4Zm6htJdMudmfN-R_oRJnNrulsuVgdENLUevHtPreM4sYZHDp2hSYdBYZALT9bibVeheXLj1qe12xm6",
+      "bio_score": 95,
+      "badges": [
+        { "icon": "spa", "label": "Biodegradável • Sem cimento" },
+        { "icon": "location_on", "label": "Fibra da Bahia" }
+      ],
+      "consumption": "4,5 kg/m²"
     },
     {
       "id": "tijolo-ceramico",

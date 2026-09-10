@@ -27,6 +27,15 @@ function matchesCategory(m: Material, cat: string): boolean {
   return false;
 }
 
+function formatUnit(label: string | undefined, fallback: string): string {
+  return label || fallback;
+}
+
+function formatPrice(price?: number): string {
+  if (price === undefined) return '—';
+  return `R$ ${price.toFixed(2).replace('.', ',')}`;
+}
+
 export function MaterialCatalog({ catalog, region, project }: MaterialCatalogProps) {
   const [activeCat, setActiveCat] = useState('all');
   const selectedIds = new Set(project?.selected_material_ids ?? []);
@@ -69,38 +78,76 @@ export function MaterialCatalog({ catalog, region, project }: MaterialCatalogPro
         {materials.map((m) => {
           const price = m.prices_per_region[region];
           const selected = selectedIds.has(m.id);
-          const score = Math.round(m.sustainability_factor * 100);
+          const score = m.bio_score ?? Math.round(m.sustainability_factor * 100);
           return (
             <div
               key={m.id}
               className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden tactile-card flex flex-col justify-between"
             >
+              {m.image_url ? (
+                <div className="relative h-48 w-full overflow-hidden bg-surface-container">
+                  <img
+                    src={m.image_url}
+                    alt={m.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant/60 flex items-center gap-1 text-label-sm font-label-sm font-bold text-primary">
+                    <Icon name="eco" className="text-[14px]" fill />
+                    Score Bio: {score}/100
+                  </div>
+                  {m.display_category && (
+                    <div className="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-on-background/70 text-surface-container-lowest text-label-sm font-label-sm font-medium">
+                      {m.display_category}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-24 w-full bg-surface-container border-b border-outline-variant/40" />
+              )}
+
               <div className="p-space-md space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-title-lg font-title-lg font-semibold text-on-surface">{m.name}</h3>
                   <span className="text-title-md font-title-md font-bold text-secondary whitespace-nowrap">
-                    {price !== undefined ? `R$ ${price.toFixed(2)}` : '—'}
-                    <span className="text-body-sm font-normal text-on-surface-variant"> / {m.unit}</span>
+                    {formatPrice(price)}
+                    <span className="text-body-sm font-normal text-on-surface-variant"> / {formatUnit(m.unit_label, m.unit)}</span>
                   </span>
                 </div>
                 <p className="text-body-sm font-body-sm text-on-surface-variant">{m.description}</p>
-                <div className="flex items-center gap-2 text-label-sm font-label-sm text-primary font-bold">
-                  <Icon name="eco" className="text-[14px]" fill />
-                  Score Bio: {score}/100
-                </div>
-                <div className="pt-2 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
-                    <Icon name="check_circle" className="text-[14px]" />
-                    CO₂: {m.co2_kg_per_unit} kg/un
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
-                    Vida útil: {m.lifespan_years} anos
-                  </span>
-                </div>
+
+                {(m.badges && m.badges.length > 0) ? (
+                  <div className="pt-2 flex flex-wrap items-center gap-2">
+                    {m.badges.map((badge, i) => (
+                      <span
+                        key={i}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm font-medium ${
+                          i === 0
+                            ? 'bg-tertiary-fixed text-on-tertiary-fixed'
+                            : 'bg-secondary-fixed text-on-secondary-fixed'
+                        }`}
+                      >
+                        <Icon name={badge.icon} className="text-[14px]" />
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="pt-2 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium">
+                      <Icon name="check_circle" className="text-[14px]" />
+                      CO₂: {m.co2_kg_per_unit} kg/un
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm font-medium">
+                      Vida útil: {m.lifespan_years} anos
+                    </span>
+                  </div>
+                )}
               </div>
+
               <div className="p-space-md pt-0 border-t border-outline-variant/40 mt-3 flex items-center justify-between">
                 <span className="text-label-sm font-label-sm text-on-surface-variant">
-                  {m.source_note || 'Referência SINAPI (protótipo)'}
+                  {m.origin || m.yield || m.u_value || m.acoustic || m.consumption || m.source_note || 'Referência SINAPI (protótipo)'}
                 </span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-label-md font-label-md font-semibold border ${
