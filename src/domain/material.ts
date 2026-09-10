@@ -13,6 +13,7 @@ export interface Material {
   description: string;
   category: string;
   display_category?: string;
+  applicable_categories?: string[];
   prices_per_region: Record<string, number>;
   sustainability_factor: number;
   co2_kg_per_unit: number;

@@ -1,25 +1,10 @@
 import { Icon } from './Icon';
+import { RoomEditorCard } from './RoomEditorCard';
 import type { Project, Room } from '../domain/project';
 
 interface RoomScheduleProps {
   project: Project;
 }
-
-const TYPE_LABELS: Record<string, string> = {
-  bedroom: 'Quarto',
-  bathroom: 'Banheiro',
-  kitchen: 'Cozinha',
-  living: 'Sala de estar',
-  dining: 'Sala de jantar',
-  office: 'Escritório',
-  laundry: 'Lavanderia',
-  storage: 'Armazenamento',
-  garage: 'Garagem',
-  garden: 'Jardim',
-  deck: 'Deck',
-  terrace: 'Terraço',
-  corridor: 'Circulação',
-};
 
 export function RoomSchedule({ project }: RoomScheduleProps) {
   const schedule = project.room_schedule;
@@ -56,14 +41,14 @@ export function RoomSchedule({ project }: RoomScheduleProps) {
 
       <p className="text-body-sm font-body-sm text-on-surface-variant">{schedule?.notes}</p>
 
-      <FloorSection title="Térreo / Primeiro pavimento" rooms={firstFloor} />
-      {secondFloor.length > 0 && <FloorSection title="Segundo pavimento" rooms={secondFloor} />}
-      {outdoor.length > 0 && <FloorSection title="Áreas externas" rooms={outdoor} />}
+      <FloorSection title="Térreo / Primeiro pavimento" rooms={firstFloor} project={project} />
+      {secondFloor.length > 0 && <FloorSection title="Segundo pavimento" rooms={secondFloor} project={project} />}
+      {outdoor.length > 0 && <FloorSection title="Áreas externas" rooms={outdoor} project={project} />}
     </section>
   );
 }
 
-function FloorSection({ title, rooms }: { title: string; rooms: Room[] }) {
+function FloorSection({ title, rooms, project }: { title: string; rooms: Room[]; project: Project }) {
   return (
     <div className="space-y-2">
       <h3 className="text-title-md font-title-md font-semibold text-on-surface flex items-center gap-2">
@@ -72,25 +57,7 @@ function FloorSection({ title, rooms }: { title: string; rooms: Room[] }) {
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {rooms.map((room) => (
-          <div key={room.id} className="p-3 rounded-xl bg-surface-container-lowest border border-outline-variant flex items-start justify-between gap-2">
-            <div>
-              <h4 className="text-body-md font-body-md font-semibold text-on-surface">{room.name}</h4>
-              <p className="text-label-sm text-on-surface-variant">{TYPE_LABELS[room.type] || room.type}</p>
-              {(room.features || []).length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {(room.features || []).map((f) => (
-                    <span key={f} className="text-[10px] px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed uppercase tracking-wide">
-                      {f}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="text-right">
-              <div className="text-title-md font-title-md font-bold text-secondary">{Math.round(room.area_m2)}</div>
-              <div className="text-[10px] text-on-surface-variant">{room.width_m.toFixed(1)}m × {room.depth_m.toFixed(1)}m</div>
-            </div>
-          </div>
+          <RoomEditorCard key={room.id} project={project} room={room} />
         ))}
       </div>
     </div>
