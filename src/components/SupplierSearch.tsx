@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
 import { useSuppliers } from '../hooks/useSuppliers';
+import type { Material } from '../domain/material';
 import type { Project } from '../domain/project';
 
 interface SupplierSearchProps {
   project: Project;
+  materials: Material[];
 }
 
-export function SupplierSearch({ project }: SupplierSearchProps) {
+export function SupplierSearch({ project, materials }: SupplierSearchProps) {
   const { suppliers, loading, error, search } = useSuppliers();
+
+  function findMaterialName(id: string) {
+    return materials.find((m) => m.id === id)?.name || id;
+  }
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
 
@@ -83,8 +89,21 @@ export function SupplierSearch({ project }: SupplierSearchProps) {
                 <h4 className="text-title-md font-title-md font-semibold text-on-surface">{s.name}</h4>
                 <p className="text-label-sm font-label-sm text-secondary uppercase tracking-wider">{s.category}</p>
               </div>
+              <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed text-[11px] font-bold">
+                {s.region}
+              </span>
             </div>
             <p className="text-body-sm font-body-sm text-on-surface-variant">{s.notes}</p>
+            <div className="flex flex-wrap gap-2">
+              {s.material_ids.map((id) => (
+                <span
+                  key={id}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-label-sm font-label-sm font-medium"
+                >
+                  {findMaterialName(id)}
+                </span>
+              ))}
+            </div>
             <div className="pt-2 border-t border-outline-variant/40 text-body-sm font-body-sm text-on-surface-variant space-y-1">
               <p className="flex items-center gap-1">
                 <Icon name="location_on" className="text-[14px] text-primary" />

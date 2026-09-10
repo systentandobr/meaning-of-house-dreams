@@ -23,14 +23,19 @@ export function ActionBar({ project, materials }: ActionBarProps) {
   return (
     <aside className="sticky bottom-0 z-30 bg-surface-container-low/95 backdrop-blur-md border-t border-outline-variant py-3 px-gutter-desktop shadow-md">
       <div className="w-full max-w-content-max-width mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div>
-          <div className="text-title-md font-title-md font-semibold text-on-surface">
-            {project ? `${project.name}` : 'Crie um projeto para começar'}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-bold">
+            <Icon name="check_circle" className="text-[20px]" />
           </div>
-          <div className="text-body-sm font-body-sm text-on-surface-variant">
-            {project
-              ? `${selectedCount} materiais selecionados • Orçamento: ${budget}`
-              : 'Defina localização, área e sonhos para gerar o plano.'}
+          <div>
+            <div className="text-title-md font-title-md font-semibold text-on-surface">
+              {project ? `${project.name} pronto para emissão de prévia` : 'Crie um projeto para começar'}
+            </div>
+            <div className="text-body-sm font-body-sm text-on-surface-variant">
+              {project
+                ? `${selectedCount} materiais selecionados • Orçamento: ${budget}`
+                : 'Defina localização, área e sonhos para gerar o plano.'}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-space-sm w-full sm:w-auto justify-end">

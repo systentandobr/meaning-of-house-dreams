@@ -76,7 +76,15 @@ function FloorSection({ title, rooms }: { title: string; rooms: Room[] }) {
             <div>
               <h4 className="text-body-md font-body-md font-semibold text-on-surface">{room.name}</h4>
               <p className="text-label-sm text-on-surface-variant">{TYPE_LABELS[room.type] || room.type}</p>
-
+              {(room.features || []).length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {(room.features || []).map((f) => (
+                    <span key={f} className="text-[10px] px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed uppercase tracking-wide">
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="text-right">
               <div className="text-title-md font-title-md font-bold text-secondary">{Math.round(room.area_m2)}</div>

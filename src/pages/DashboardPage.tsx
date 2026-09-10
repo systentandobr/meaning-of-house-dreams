@@ -96,7 +96,7 @@ export function DashboardPage() {
 
         <MCPConsole />
 
-        <SupplierSearch project={project} />
+        <SupplierSearch project={project} materials={catalog.materials} />
       </main>
 
       <ActionBar project={project} materials={catalog.materials} />

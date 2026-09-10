@@ -1,6 +1,14 @@
 import { useState } from 'react';
+import { Icon } from './Icon';
 import { callTool } from '../services/mcpService';
 import { useAppStore } from '../store/appStore';
+
+const PRESETS = [
+  { name: 'Clima', tool: 'casa_clima_por_municipio', args: '{"city":"São Paulo","uf":"SP"}' },
+  { name: 'Materiais', tool: 'casa_listar_materiais', args: '{"region":"Sudeste"}' },
+  { name: 'CBS', tool: 'casa_calcular_cbs', args: '{"material_id":"tijolo-ecologico","region":"Sudeste"}' },
+  { name: 'Fornecedores', tool: 'casa_search_suppliers', args: '{"region":"Sudeste","state":"SP"}' },
+];
 
 export function MCPConsole() {
   const { region } = useAppStore();
@@ -22,12 +30,33 @@ export function MCPConsole() {
     }
   }
 
+  function applyPreset(p: typeof PRESETS[0]) {
+    setTool(p.tool);
+    setArgs(p.args.replace('Sudeste', region));
+  }
+
   return (
     <section className="bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-md shadow-sm" id="mcp">
       <div>
+        <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+          <Icon name="hub" className="text-[16px]" />
+          webMCP / Assistente
+        </div>
         <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">
           Console de Tools Casa dos Sonhos
         </h2>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {PRESETS.map((p) => (
+          <button
+            key={p.name}
+            onClick={() => applyPreset(p)}
+            className="px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant text-label-sm hover:border-primary"
+          >
+            {p.name}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">

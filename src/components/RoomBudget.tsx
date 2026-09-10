@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icon } from './Icon';
 import { useProject } from '../hooks/useProject';
 import type { RoomEstimate } from '../services/projectService';
 
@@ -26,6 +27,10 @@ export function RoomBudget() {
     <section className="bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-md shadow-sm" id="orcamento">
       <div className="flex items-center justify-between">
         <div>
+          <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+            <Icon name="calculate" className="text-[16px]" />
+            Orçamento por Ambiente
+          </div>
           <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">
             Estimativa Inicial de Custos
           </h2>
