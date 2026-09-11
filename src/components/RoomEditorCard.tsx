@@ -10,6 +10,11 @@ interface RoomEditorCardProps {
   room: Room;
 }
 
+function formatDim(n: number): string {
+  if (typeof n !== 'number' || isNaN(n)) return '0';
+  return Number(n.toFixed(1)).toString().replace('.', ',');
+}
+
 export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
   const { simulate, addMaterial, removeMaterial } = useProject();
   const { setDraftProject, isSimulation, startSimulation, selectedRoomId, setSelectedRoomId } = useAppStore();
@@ -97,24 +102,25 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
     <div
       id={`room-card-${room.id}`}
       onClick={() => setSelectedRoomId(room.id)}
-      className={`p-3 rounded-xl bg-surface-container-lowest border transition-all duration-200 cursor-pointer ${
+      className={`p-3 rounded-xl bg-surface-container-lowest border transition-all duration-200 cursor-pointer self-start w-full ${
         isSelected
           ? 'border-primary ring-2 ring-primary/20 shadow-md bg-surface-container-low'
           : 'border-outline-variant hover:border-outline'
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-body-md font-body-md font-semibold text-on-surface">{room.name}</h4>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h4 className="text-body-md font-body-md font-semibold text-on-surface truncate">{room.name}</h4>
             {isSelected && (
-              <span className="px-1.5 py-0.2 rounded bg-primary text-on-primary text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded bg-primary text-on-primary text-[10px] font-bold shrink-0">
                 Ativo no 2D
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-label-sm text-on-surface-variant">
-            <span>{Math.round(room.area_m2)} m² ({room.width_m}×{room.depth_m}m)</span>
+          <div className="flex items-center gap-1.5 text-label-sm text-on-surface-variant flex-wrap mt-0.5">
+            <span className="font-medium text-on-surface">{Math.round(room.area_m2)} m²</span>
+            <span>({formatDim(room.width_m)} × {formatDim(room.depth_m)}m)</span>
             {roomCost > 0 && (
               <>
                 <span>•</span>
@@ -124,7 +130,7 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {saving && <span className="text-[10px] text-on-surface-variant animate-pulse">salvando...</span>}
           <button
             onClick={(e) => {
@@ -154,7 +160,7 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
                   setWidth(v);
                   setDimension(v, depth);
                 }}
-                className="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-body-md"
+                className="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-sm font-semibold text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -170,7 +176,7 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
                   setDepth(v);
                   setDimension(width, v);
                 }}
-                className="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-body-md"
+                className="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-sm font-semibold text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -182,7 +188,7 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
             <select
               value=""
               onChange={(e) => e.target.value && assignMaterial(e.target.value)}
-              className="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1.5 text-body-md"
+              className="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-2 text-xs font-medium text-on-surface truncate focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="">Selecionar material do catálogo...</option>
               {materials
@@ -206,15 +212,15 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
                   className="p-2.5 rounded-lg bg-surface-container border border-outline-variant/60 space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="text-body-sm font-semibold text-on-surface block">{m.name}</span>
+                    <div className="min-w-0">
+                      <span className="text-body-sm font-semibold text-on-surface block truncate">{m.name}</span>
                       <span className="text-[11px] text-on-surface-variant">
-                        Categoria: {m.category} • R$ {m.unit_price.toFixed(2)} / {m.unit}
+                        {m.category} • R$ {m.unit_price.toFixed(2)} / {m.unit}
                       </span>
                     </div>
                     <button
                       onClick={() => removeRoomMaterial(m.material_id)}
-                      className="p-1 rounded hover:bg-error-container text-error"
+                      className="p-1 rounded hover:bg-error-container text-error shrink-0"
                       title="Remover material"
                     >
                       <Icon name="delete" className="text-[16px]" />

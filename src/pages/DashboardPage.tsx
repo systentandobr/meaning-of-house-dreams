@@ -89,7 +89,7 @@ export function DashboardPage() {
           onToggleTask={toggleTask}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-xl items-start">
           <RoomSchedule project={currentProject} />
           <LotViewer project={currentProject} />
         </div>
