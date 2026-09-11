@@ -149,6 +149,17 @@ export default function LotViewer({ project }: LotViewerProps) {
   const [pending, setPending] = useState(false);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
 
+  // Zoom & Pan state
+  const [zoom, setZoom] = useState<number>(1);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ x: number; y: number; startPanX: number; startPanY: number }>({
+    x: 0,
+    y: 0,
+    startPanX: 0,
+    startPanY: 0,
+  });
+
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const resizeStartRef = useRef<{ width: number; depth: number; startX: number; startY: number }>({
     width: 0,
@@ -185,7 +196,7 @@ export default function LotViewer({ project }: LotViewerProps) {
     const s = Math.min(maxPx / w, 240 / d);
     const lw = w * s;
     const ld = d * s;
-    return { scale: s, width: lw, depth: ld, lotX: (400 - lw) / 2, lotY: (300 - ld) / 2 + 10 };
+    return { scale: s, width: lw, depth: ld, lotX: (400 - lw) / 2, lotY: (320 - ld) / 2 };
   }, [currentProject.lot_width, currentProject.lot_depth]);
 
   // Setbacks envelope
@@ -246,18 +257,43 @@ export default function LotViewer({ project }: LotViewerProps) {
 
   const windInfo = WIND_DIRECTIONS[currentProject.region] || WIND_DIRECTIONS['Sudeste'];
 
-  function toSvgM(px: number) {
-    return (px - lotX) / scale;
+  function toSvgM(screenX: number) {
+    const basePx = (screenX - 200 - pan.x) / zoom + 200;
+    return (basePx - lotX) / scale;
+  }
+
+  function toSvgMY(screenY: number) {
+    const basePy = (screenY - 160 - pan.y) / zoom + 160;
+    return (basePy - lotY) / scale;
   }
 
   function toSvgPx(m: number) {
     return lotX + m * scale;
   }
 
+  function toSvgPy(m: number) {
+    return lotY + m * scale;
+  }
+
   function mousePos(e: React.MouseEvent) {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    return {
+      x: (e.clientX - rect.left) * (400 / rect.width),
+      y: (e.clientY - rect.top) * (320 / rect.height),
+    };
+  }
+
+  function handleBgMouseDown(e: React.MouseEvent) {
+    if (dragging || resizing) return;
+    const pos = mousePos(e);
+    setIsPanning(true);
+    panStartRef.current = {
+      x: pos.x,
+      y: pos.y,
+      startPanX: pan.x,
+      startPanY: pan.y,
+    };
   }
 
   function startDrag(e: React.MouseEvent, room: Room) {
@@ -265,7 +301,7 @@ export default function LotViewer({ project }: LotViewerProps) {
     e.stopPropagation();
     const pos = mousePos(e);
     const clickX_m = toSvgM(pos.x);
-    const clickY_m = toSvgM(pos.y);
+    const clickY_m = toSvgMY(pos.y);
     dragOffsetRef.current = {
       x: clickX_m - room.x,
       y: clickY_m - room.y,
@@ -283,7 +319,7 @@ export default function LotViewer({ project }: LotViewerProps) {
       width: room.width_m,
       depth: room.depth_m,
       startX: toSvgM(pos.x),
-      startY: toSvgM(pos.y),
+      startY: toSvgMY(pos.y),
     };
     setResizing(room.id);
     setSelectedRoomId(room.id);
@@ -307,13 +343,25 @@ export default function LotViewer({ project }: LotViewerProps) {
   }
 
   function onMouseMove(e: React.MouseEvent) {
-    if (!dragging && !resizing) return;
     const pos = mousePos(e);
+
+    if (isPanning) {
+      const dx = pos.x - panStartRef.current.x;
+      const dy = pos.y - panStartRef.current.y;
+      setPan({
+        x: Math.round((panStartRef.current.startPanX + dx) * 10) / 10,
+        y: Math.round((panStartRef.current.startPanY + dy) * 10) / 10,
+      });
+      return;
+    }
+
+    if (!dragging && !resizing) return;
+
     if (dragging) {
       const room = allRooms.find((r) => r.id === dragging);
       if (!room) return;
       const rawX = toSvgM(pos.x) - dragOffsetRef.current.x;
-      const rawY = toSvgM(pos.y) - dragOffsetRef.current.y;
+      const rawY = toSvgMY(pos.y) - dragOffsetRef.current.y;
       const { x, y } = applyLegoSnap(
         rawX,
         rawY,
@@ -330,11 +378,12 @@ export default function LotViewer({ project }: LotViewerProps) {
       const updated = allRooms.map((r) => (r.id === dragging ? { ...r, x, y } : r));
       setLocalRooms(updated);
     }
+
     if (resizing) {
       const room = allRooms.find((r) => r.id === resizing);
       if (!room) return;
       const rawW = toSvgM(pos.x) - room.x;
-      const rawD = toSvgM(pos.y) - room.y;
+      const rawD = toSvgMY(pos.y) - room.y;
       const w = Math.max(1, Math.round(rawW * 2) / 2);
       const d = Math.max(1, Math.round(rawD * 2) / 2);
       const updated = allRooms.map((r) =>
@@ -345,12 +394,34 @@ export default function LotViewer({ project }: LotViewerProps) {
   }
 
   function onMouseUp() {
+    if (isPanning) {
+      setIsPanning(false);
+    }
     if (!dragging && !resizing) return;
     if (localRooms) {
       sendSimulation(localRooms);
     }
     setDragging(null);
     setResizing(null);
+  }
+
+  function handleWheel(e: React.WheelEvent) {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    setZoom((z) => Math.max(0.6, Math.min(2.2, Math.round((z + delta) * 100) / 100)));
+  }
+
+  function handleZoomIn() {
+    setZoom((z) => Math.min(2.2, Math.round((z + 0.2) * 10) / 10));
+  }
+
+  function handleZoomOut() {
+    setZoom((z) => Math.max(0.6, Math.round((z - 0.2) * 10) / 10));
+  }
+
+  function handleZoomReset() {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
   }
 
   function handleAutoArrange() {
@@ -514,14 +585,41 @@ export default function LotViewer({ project }: LotViewerProps) {
       </div>
 
       {view === '2d' ? (
-        <div className="relative">
+        <div className="relative overflow-hidden rounded-xl border border-outline-variant bg-[#fdfbf7] dark:bg-[#1a1816]">
+          {/* Zoom & Pan Overlay Toolbar */}
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-surface-container-lowest/90 backdrop-blur-md p-1 rounded-lg border border-outline-variant shadow-md">
+            <button
+              onClick={handleZoomIn}
+              className="p-1 rounded hover:bg-surface-container text-on-surface"
+              title="Aproximar (Zoom In)"
+            >
+              <Icon name="add" className="text-[18px]" />
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="p-1 rounded hover:bg-surface-container text-on-surface"
+              title="Afastar (Zoom Out)"
+            >
+              <Icon name="remove" className="text-[18px]" />
+            </button>
+            <button
+              onClick={handleZoomReset}
+              className="px-2 py-0.5 rounded text-[11px] font-bold text-primary hover:bg-surface-container"
+              title="Ajustar zoom e centralizar (100%)"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+          </div>
+
           <svg
             ref={svgRef}
             viewBox="0 0 400 320"
+            onMouseDown={handleBgMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
             onMouseLeave={onMouseUp}
-            className="w-full max-w-2xl bg-[#fdfbf7] dark:bg-[#1a1816] rounded-xl border border-outline-variant select-none"
+            onWheel={handleWheel}
+            className={`w-full max-w-2xl select-none ${isPanning ? 'cursor-grabbing' : 'cursor-default'}`}
             style={{ minHeight: 320 }}
           >
             <defs>
@@ -536,146 +634,152 @@ export default function LotViewer({ project }: LotViewerProps) {
               </pattern>
             </defs>
 
-            {/* Lot boundary and grid */}
-            <rect x={lotX} y={lotY} width={width} height={depth} fill="#f4eee4" stroke="#767870" strokeWidth="2" />
-            <rect x={lotX} y={lotY} width={width} height={depth} fill="url(#lot-grid)" />
+            {/* Transform Container with Zoom & Pan */}
+            <g transform={`translate(${200 + pan.x}, ${160 + pan.y}) scale(${zoom}) translate(-200, -160)`}>
+              {/* Lot boundary and grid */}
+              <rect x={lotX} y={lotY} width={width} height={depth} fill="#f4eee4" stroke="#767870" strokeWidth="2" />
+              <rect x={lotX} y={lotY} width={width} height={depth} fill="url(#lot-grid)" />
 
-            {/* Setback envelope (dashed boundary) */}
-            <rect
-              x={setbacks.sx}
-              y={setbacks.sy}
-              width={setbacks.sw}
-              height={setbacks.sd}
-              fill="#e8f5e9"
-              fillOpacity="0.4"
-              stroke="#3a4f41"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-            />
-            <text x={setbacks.sx + 4} y={setbacks.sy + 12} fontSize="8" fill="#3a4f41" fontWeight="bold">
-              Envelope Construtivo (Recuos)
-            </text>
+              {/* Setback envelope (dashed boundary) */}
+              <rect
+                x={setbacks.sx}
+                y={setbacks.sy}
+                width={setbacks.sw}
+                height={setbacks.sd}
+                fill="#e8f5e9"
+                fillOpacity="0.4"
+                stroke="#3a4f41"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+              />
+              <text x={setbacks.sx + 4} y={setbacks.sy + 12} fontSize="8" fill="#3a4f41" fontWeight="bold">
+                Envelope Construtivo (Recuos)
+              </text>
 
-            {/* Sun Trajectory Arc (East to West) */}
-            <path
-              d={`M ${lotX + width + 15} ${lotY + depth / 2} A 160 160 0 0 0 ${lotX - 15} ${lotY + depth / 2}`}
-              fill="none"
-              stroke="#e5a100"
-              strokeWidth="1.5"
-              strokeDasharray="3 3"
-              opacity="0.7"
-            />
-            <g transform={`translate(${lotX + width + 15}, ${lotY + depth / 2})`}>
-              <circle r="6" fill="#e5a100" />
-              <text x="8" y="3" fontSize="8" fill="#b27d00" fontWeight="bold">Leste (Manhã)</text>
-            </g>
-            <g transform={`translate(${lotX - 15}, ${lotY + depth / 2})`}>
-              <circle r="6" fill="#d97706" />
-              <text x="-58" y="3" fontSize="8" fill="#b45309" fontWeight="bold">Oeste (Tarde)</text>
-            </g>
+              {/* Sun Trajectory Arc (East to West) */}
+              <path
+                d={`M ${lotX + width + 15} ${lotY + depth / 2} A 160 160 0 0 0 ${lotX - 15} ${lotY + depth / 2}`}
+                fill="none"
+                stroke="#e5a100"
+                strokeWidth="1.5"
+                strokeDasharray="3 3"
+                opacity="0.7"
+              />
+              <g transform={`translate(${lotX + width + 15}, ${lotY + depth / 2})`}>
+                <circle r="6" fill="#e5a100" />
+                <text x="8" y="3" fontSize="8" fill="#b27d00" fontWeight="bold">Leste (Manhã)</text>
+              </g>
+              <g transform={`translate(${lotX - 15}, ${lotY + depth / 2})`}>
+                <circle r="6" fill="#d97706" />
+                <text x="-58" y="3" fontSize="8" fill="#b45309" fontWeight="bold">Oeste (Tarde)</text>
+              </g>
 
-            {/* Predominant Wind Vector */}
-            <g transform={`translate(${lotX + 25}, ${lotY + depth - 20}) rotate(${windInfo.angle})`}>
-              <line x1="0" y1="0" x2="25" y2="0" stroke="#006495" strokeWidth="2" markerEnd="url(#arrow-wind)" />
-              <text x="30" y="3" fontSize="7" fill="#006495" fontWeight="bold">Vento ({windInfo.label.split(' ')[0]})</text>
-            </g>
+              {/* Predominant Wind Vector */}
+              <g transform={`translate(${lotX + 25}, ${lotY + depth - 20}) rotate(${windInfo.angle})`}>
+                <line x1="0" y1="0" x2="25" y2="0" stroke="#006495" strokeWidth="2" markerEnd="url(#arrow-wind)" />
+                <text x="30" y="3" fontSize="7" fill="#006495" fontWeight="bold">Vento ({windInfo.label.split(' ')[0]})</text>
+              </g>
 
-            {/* Compass Rose / North Indicator */}
-            <g transform={`translate(${lotX + width - 25}, ${lotY + 25})`}>
-              <circle r="14" fill="#ffffff" stroke="#767870" strokeWidth="1" opacity="0.9" />
-              <line x1="0" y1="12" x2="0" y2="-12" stroke="#ba1a1a" strokeWidth="2" markerEnd="url(#arrow-n)" />
-              <line x1="-10" y1="0" x2="10" y2="0" stroke="#767870" strokeWidth="1" />
-              <text x="-3" y="-14" fontSize="8" fill="#ba1a1a" fontWeight="bold">N</text>
-              <text x="-3" y="20" fontSize="7" fill="#767870">S</text>
-              <text x="13" y="3" fontSize="7" fill="#767870">L</text>
-              <text x="-19" y="3" fontSize="7" fill="#767870">O</text>
-            </g>
+              {/* Compass Rose / North Indicator */}
+              <g transform={`translate(${lotX + width - 25}, ${lotY + 25})`}>
+                <circle r="14" fill="#ffffff" stroke="#767870" strokeWidth="1" opacity="0.9" />
+                <line x1="0" y1="12" x2="0" y2="-12" stroke="#ba1a1a" strokeWidth="2" markerEnd="url(#arrow-n)" />
+                <line x1="-10" y1="0" x2="10" y2="0" stroke="#767870" strokeWidth="1" />
+                <text x="-3" y="-14" fontSize="8" fill="#ba1a1a" fontWeight="bold">N</text>
+                <text x="-3" y="20" fontSize="7" fill="#767870">S</text>
+                <text x="13" y="3" fontSize="7" fill="#767870">L</text>
+                <text x="-19" y="3" fontSize="7" fill="#767870">O</text>
+              </g>
 
-            {/* Render Rooms */}
-            {rooms.map((room) => {
-              const x = toSvgPx(room.x);
-              const y = toSvgPx(room.y);
-              const w = room.width_m * scale;
-              const h = room.depth_m * scale;
-              const hasConflict = conflicts.has(room.id);
-              const isSelected = selectedRoomId === room.id;
-              const isHovered = hoveredRoom?.id === room.id && !dragging && !resizing;
+              {/* Render Rooms */}
+              {rooms.map((room) => {
+                const x = toSvgPx(room.x);
+                const y = toSvgPy(room.y);
+                const w = room.width_m * scale;
+                const h = room.depth_m * scale;
+                const hasConflict = conflicts.has(room.id);
+                const isSelected = selectedRoomId === room.id;
+                const isHovered = hoveredRoom?.id === room.id && !dragging && !resizing;
 
-              return (
-                <g
-                  key={room.id}
-                  onMouseDown={(e) => startDrag(e, room)}
-                  onMouseEnter={() => {
-                    if (!dragging && !resizing) {
-                      setHoveredRoom(room);
-                    }
-                  }}
-                  onMouseLeave={() => setHoveredRoom(null)}
-                  onClick={() => scrollToRoomCard(room.id)}
-                >
-                  <rect
-                    x={x}
-                    y={y}
-                    width={w}
-                    height={h}
-                    fill={ROOM_COLORS[room.type] || '#ffffff'}
-                    stroke={isSelected ? '#3a4f41' : hasConflict ? '#ba1a1a' : isHovered ? '#1e1b15' : '#767870'}
-                    strokeWidth={isSelected ? 3 : hasConflict ? 2 : 1}
-                    strokeDasharray={hasConflict ? '4 2' : 'none'}
-                    rx="4"
-                    style={{
-                      cursor: dragging === room.id ? 'grabbing' : 'grab',
-                      filter: isSelected ? 'drop-shadow(0 2px 5px rgba(0,0,0,0.2))' : 'none',
+                return (
+                  <g
+                    key={room.id}
+                    onMouseDown={(e) => startDrag(e, room)}
+                    onMouseEnter={() => {
+                      if (!dragging && !resizing) {
+                        setHoveredRoom(room);
+                      }
                     }}
-                  />
-
-                  {/* Room name and dimensions */}
-                  {w > 35 && h > 20 && (
-                    <>
-                      <text
-                        x={x + 4}
-                        y={y + 13}
-                        fontSize={w < 50 ? '8' : '9.5'}
-                        fontWeight="600"
-                        fill="#1e1b15"
-                        className="select-none pointer-events-none"
-                      >
-                        {room.name}
-                      </text>
-                      <text
-                        x={x + 4}
-                        y={y + 24}
-                        fontSize={w < 50 ? '7.5' : '8.5'}
-                        fill="#454840"
-                        className="select-none pointer-events-none"
-                      >
-                        {Math.round(room.area_m2)}m² ({room.width_m}×{room.depth_m}m)
-                      </text>
-                    </>
-                  )}
-
-                  {/* Resize handle on selected room */}
-                  {isSelected && (
-                    <circle
-                      cx={x + w - 6}
-                      cy={y + h - 6}
-                      r={5}
-                      fill="#3a4f41"
-                      stroke="#ffffff"
-                      strokeWidth="1.5"
-                      style={{ cursor: 'se-resize' }}
-                      onMouseDown={(e) => startResize(e, room)}
+                    onMouseLeave={() => setHoveredRoom(null)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedRoomId(room.id);
+                    }}
+                  >
+                    <rect
+                      x={x}
+                      y={y}
+                      width={w}
+                      height={h}
+                      fill={ROOM_COLORS[room.type] || '#ffffff'}
+                      stroke={isSelected ? '#3a4f41' : hasConflict ? '#ba1a1a' : isHovered ? '#1e1b15' : '#767870'}
+                      strokeWidth={isSelected ? 3 : hasConflict ? 2 : 1}
+                      strokeDasharray={hasConflict ? '4 2' : 'none'}
+                      rx="4"
+                      style={{
+                        cursor: dragging === room.id ? 'grabbing' : 'grab',
+                        filter: isSelected ? 'drop-shadow(0 2px 5px rgba(0,0,0,0.2))' : 'none',
+                      }}
                     />
-                  )}
-                </g>
-              );
-            })}
+
+                    {/* Room name and dimensions */}
+                    {w > 30 && h > 18 && (
+                      <>
+                        <text
+                          x={x + 4}
+                          y={y + 13}
+                          fontSize={w < 50 ? '8' : '9.5'}
+                          fontWeight="600"
+                          fill="#1e1b15"
+                          className="select-none pointer-events-none"
+                        >
+                          {room.name}
+                        </text>
+                        <text
+                          x={x + 4}
+                          y={y + 24}
+                          fontSize={w < 50 ? '7.5' : '8.5'}
+                          fill="#454840"
+                          className="select-none pointer-events-none"
+                        >
+                          {Math.round(room.area_m2)}m² ({room.width_m}×{room.depth_m}m)
+                        </text>
+                      </>
+                    )}
+
+                    {/* Resize handle on selected room */}
+                    {isSelected && (
+                      <circle
+                        cx={x + w - 6}
+                        cy={y + h - 6}
+                        r={5}
+                        fill="#3a4f41"
+                        stroke="#ffffff"
+                        strokeWidth="1.5"
+                        style={{ cursor: 'se-resize' }}
+                        onMouseDown={(e) => startResize(e, room)}
+                      />
+                    )}
+                  </g>
+                );
+              })}
+            </g>
           </svg>
 
           {/* Integrated Unobtrusive Status Bar */}
-          <div className="mt-2 p-2 bg-surface-container-lowest rounded-lg border border-outline-variant/60 flex items-center justify-between text-xs text-on-surface-variant">
+          <div className="p-2.5 bg-surface-container-lowest border-t border-outline-variant/60 flex items-center justify-between text-xs text-on-surface-variant">
             {hoveredRoom ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 truncate">
                 <span className="font-bold text-on-surface">{hoveredRoom.name}</span>
                 <span>•</span>
                 <span>{hoveredRoom.width_m}m × {hoveredRoom.depth_m}m ({Math.round(hoveredRoom.area_m2)} m²)</span>
@@ -687,16 +791,19 @@ export default function LotViewer({ project }: LotViewerProps) {
                 </span>
               </div>
             ) : (
-              <span className="italic text-[11px]">
-                💡 Dica: Clique e arraste um cômodo para posicionar. Ele se encaixa automaticamente nas paredes vizinhas (Lego Snap).
+              <span className="italic text-[11px] truncate">
+                💡 Dica: Arraste os blocos para encaixar (Lego Snap). Use o scroll do mouse ou os botões +/- para Zoom e arraste o fundo para mover a tela (Pan).
               </span>
             )}
-            <span className="text-[10px] font-mono opacity-80 shrink-0">Snap: Magnético 0.5m</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] font-mono opacity-80">Zoom: {Math.round(zoom * 100)}%</span>
+              <span className="text-[10px] font-mono opacity-80">Snap: 0.5m</span>
+            </div>
           </div>
 
           {/* Floating Contextual Toolbar for Active Room */}
           {activeRoomObj && (
-            <div className="mt-3 p-3 bg-surface-container rounded-xl border border-outline-variant flex flex-wrap items-center justify-between gap-2 shadow-sm animate-fadeIn">
+            <div className="p-3 bg-surface-container border-t border-outline-variant flex flex-wrap items-center justify-between gap-2 shadow-sm animate-fadeIn">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-primary" />
                 <span className="text-body-md font-bold text-on-surface">{activeRoomObj.name}</span>
@@ -722,10 +829,10 @@ export default function LotViewer({ project }: LotViewerProps) {
                 <button
                   onClick={() => scrollToRoomCard(activeRoomObj.id)}
                   className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-secondary text-on-secondary text-label-sm font-semibold shadow-sm"
-                  title="Abrir detalhes e materiais"
+                  title="Rolar a página até o card de materiais deste cômodo"
                 >
                   <Icon name="tune" className="text-[16px]" />
-                  Editar Card
+                  Ver Card
                 </button>
                 <button
                   onClick={() => handleDeleteRoom(activeRoomObj.id)}
@@ -740,8 +847,7 @@ export default function LotViewer({ project }: LotViewerProps) {
         </div>
       ) : (
         <div className="w-full max-w-2xl rounded-xl border border-outline-variant overflow-hidden bg-surface-container-low">
-          <Suspense fallback={<p className="p-4 text-body-sm text-on-surface-variant">Carregando visualizador 3D...</p>
-          }>
+          <Suspense fallback={<p className="p-4 text-body-sm text-on-surface-variant">Carregando visualizador 3D...</p>}>
             <LotViewer3D project={currentProject} />
           </Suspense>
         </div>
