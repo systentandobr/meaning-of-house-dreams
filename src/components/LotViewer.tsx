@@ -27,16 +27,117 @@ const ROOM_COLORS: Record<string, string> = {
   corridor: '#f5f5f5',
 };
 
-const WIND_DIRECTIONS: Record<string, { label: string; angle: number; note: string }> = {
-  Sudeste: { label: 'SE ➔ NO (Vento Sudeste)', angle: 135, note: 'Brisa fresca predominante do litoral e montanha' },
-  Sul: { label: 'S ➔ N (Vento Sul)', angle: 180, note: 'Frentes frias do Sul, boa ventilação cruzada' },
-  Nordeste: { label: 'E ➔ O (Vento Leste/Alísios)', angle: 90, note: 'Alísios constantes de Leste' },
-  'Centro-Oeste': { label: 'NE ➔ SO (Vento Nordeste)', angle: 45, note: 'Brisa suave do cerrado' },
-  Norte: { label: 'E ➔ O (Vento Leste)', angle: 90, note: 'Alísios equatoriais úmidos' },
+const WIND_DIRECTIONS: Record<string, { label: string; angle: number }> = {
+  Sudeste: { label: 'SE ➔ NO (Vento Sudeste)', angle: 135 },
+  Sul: { label: 'S ➔ N (Vento Sul)', angle: 180 },
+  Nordeste: { label: 'E ➔ O (Vento Leste/Alísios)', angle: 90 },
+  'Centro-Oeste': { label: 'NE ➔ SO (Vento Nordeste)', angle: 45 },
+  Norte: { label: 'E ➔ O (Vento Leste)', angle: 90 },
 };
 
-function snap(val: number, step = 0.5): number {
-  return Math.round(val / step) * step;
+function applyLegoSnap(
+  targetX: number,
+  targetY: number,
+  targetW: number,
+  targetD: number,
+  currentRoomId: string,
+  otherRooms: Room[],
+  lotW: number,
+  lotD: number,
+  frontSetback: number,
+  sideSetback: number,
+  backSetback: number
+): { x: number; y: number } {
+  const SNAP_THRESHOLD = 0.6; // meters
+  let snappedX = targetX;
+  let snappedY = targetY;
+
+  let minDiffX = SNAP_THRESHOLD;
+  let minDiffY = SNAP_THRESHOLD;
+
+  // 1. Snap to setbacks (envelope)
+  if (Math.abs(targetX - sideSetback) < minDiffX) {
+    snappedX = sideSetback;
+    minDiffX = Math.abs(targetX - sideSetback);
+  }
+  const rightSetbackX = lotW - sideSetback - targetW;
+  if (Math.abs(targetX - rightSetbackX) < minDiffX) {
+    snappedX = rightSetbackX;
+    minDiffX = Math.abs(targetX - rightSetbackX);
+  }
+  if (Math.abs(targetY - frontSetback) < minDiffY) {
+    snappedY = frontSetback;
+    minDiffY = Math.abs(targetY - frontSetback);
+  }
+  const backSetbackY = lotD - backSetback - targetD;
+  if (Math.abs(targetY - backSetbackY) < minDiffY) {
+    snappedY = backSetbackY;
+    minDiffY = Math.abs(targetY - backSetbackY);
+  }
+
+  // 2. Snap to neighbor rooms (Lego-like alignment)
+  for (const b of otherRooms) {
+    if (b.id === currentRoomId) continue;
+
+    // Horizontal snapping
+    const rightOfB = b.x + b.width_m;
+    if (Math.abs(targetX - rightOfB) < minDiffX) {
+      snappedX = rightOfB;
+      minDiffX = Math.abs(targetX - rightOfB);
+    }
+    const leftOfB = b.x - targetW;
+    if (Math.abs(targetX - leftOfB) < minDiffX) {
+      snappedX = leftOfB;
+      minDiffX = Math.abs(targetX - leftOfB);
+    }
+    if (Math.abs(targetX - b.x) < minDiffX) {
+      snappedX = b.x;
+      minDiffX = Math.abs(targetX - b.x);
+    }
+    const flushRightB = b.x + b.width_m - targetW;
+    if (Math.abs(targetX - flushRightB) < minDiffX) {
+      snappedX = flushRightB;
+      minDiffX = Math.abs(targetX - flushRightB);
+    }
+
+    // Vertical snapping
+    const bottomOfB = b.y + b.depth_m;
+    if (Math.abs(targetY - bottomOfB) < minDiffY) {
+      snappedY = bottomOfB;
+      minDiffY = Math.abs(targetY - bottomOfB);
+    }
+    const topOfB = b.y - targetD;
+    if (Math.abs(targetY - topOfB) < minDiffY) {
+      snappedY = topOfB;
+      minDiffY = Math.abs(targetY - topOfB);
+    }
+    if (Math.abs(targetY - b.y) < minDiffY) {
+      snappedY = b.y;
+      minDiffY = Math.abs(targetY - b.y);
+    }
+    const flushBottomB = b.y + b.depth_m - targetD;
+    if (Math.abs(targetY - flushBottomB) < minDiffY) {
+      snappedY = flushBottomB;
+      minDiffY = Math.abs(targetY - flushBottomB);
+    }
+  }
+
+  // Fallback to 0.25m grid if no magnetic snap was triggered
+  if (minDiffX === SNAP_THRESHOLD) {
+    snappedX = Math.round(targetX * 4) / 4;
+  }
+  if (minDiffY === SNAP_THRESHOLD) {
+    snappedY = Math.round(targetY * 4) / 4;
+  }
+
+  // Ensure inside lot bounds
+  snappedX = Math.max(0, Math.min(snappedX, lotW - targetW));
+  snappedY = Math.max(0, Math.min(snappedY, lotD - targetD));
+
+  return {
+    x: Math.round(snappedX * 100) / 100,
+    y: Math.round(snappedY * 100) / 100,
+  };
 }
 
 export default function LotViewer({ project }: LotViewerProps) {
@@ -47,7 +148,14 @@ export default function LotViewer({ project }: LotViewerProps) {
   const [localRooms, setLocalRooms] = useState<Room[] | null>(null);
   const [pending, setPending] = useState(false);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
+  const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const resizeStartRef = useRef<{ width: number; depth: number; startX: number; startY: number }>({
+    width: 0,
+    depth: 0,
+    startX: 0,
+    startY: 0,
+  });
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const { simulate } = useProject();
@@ -109,7 +217,6 @@ export default function LotViewer({ project }: LotViewerProps) {
     for (let i = 0; i < rooms.length; i++) {
       const a = rooms[i];
       if (a.floor === 0) continue;
-      // Check lot bounds & setbacks
       const frontM = currentProject.front_setback || 3.0;
       const sideM = currentProject.side_setback || 1.5;
       const backM = currentProject.back_setback || 1.5;
@@ -155,15 +262,32 @@ export default function LotViewer({ project }: LotViewerProps) {
 
   function startDrag(e: React.MouseEvent, room: Room) {
     e.preventDefault();
+    e.stopPropagation();
+    const pos = mousePos(e);
+    const clickX_m = toSvgM(pos.x);
+    const clickY_m = toSvgM(pos.y);
+    dragOffsetRef.current = {
+      x: clickX_m - room.x,
+      y: clickY_m - room.y,
+    };
     setDragging(room.id);
     setSelectedRoomId(room.id);
+    setHoveredRoom(null);
   }
 
   function startResize(e: React.MouseEvent, room: Room) {
     e.preventDefault();
     e.stopPropagation();
+    const pos = mousePos(e);
+    resizeStartRef.current = {
+      width: room.width_m,
+      depth: room.depth_m,
+      startX: toSvgM(pos.x),
+      startY: toSvgM(pos.y),
+    };
     setResizing(room.id);
     setSelectedRoomId(room.id);
+    setHoveredRoom(null);
   }
 
   async function sendSimulation(updatedRooms: Room[], autoArrange = false) {
@@ -188,10 +312,21 @@ export default function LotViewer({ project }: LotViewerProps) {
     if (dragging) {
       const room = allRooms.find((r) => r.id === dragging);
       if (!room) return;
-      const rawX = toSvgM(pos.x) - room.width_m / 2;
-      const rawY = toSvgM(pos.y) - room.depth_m / 2;
-      const x = snap(Math.max(0, rawX));
-      const y = snap(Math.max(0, rawY));
+      const rawX = toSvgM(pos.x) - dragOffsetRef.current.x;
+      const rawY = toSvgM(pos.y) - dragOffsetRef.current.y;
+      const { x, y } = applyLegoSnap(
+        rawX,
+        rawY,
+        room.width_m,
+        room.depth_m,
+        room.id,
+        rooms,
+        currentProject.lot_width,
+        currentProject.lot_depth,
+        currentProject.front_setback || 3,
+        currentProject.side_setback || 1.5,
+        currentProject.back_setback || 1.5
+      );
       const updated = allRooms.map((r) => (r.id === dragging ? { ...r, x, y } : r));
       setLocalRooms(updated);
     }
@@ -200,8 +335,8 @@ export default function LotViewer({ project }: LotViewerProps) {
       if (!room) return;
       const rawW = toSvgM(pos.x) - room.x;
       const rawD = toSvgM(pos.y) - room.y;
-      const w = Math.max(1, snap(rawW));
-      const d = Math.max(1, snap(rawD));
+      const w = Math.max(1, Math.round(rawW * 2) / 2);
+      const d = Math.max(1, Math.round(rawD * 2) / 2);
       const updated = allRooms.map((r) =>
         r.id === resizing ? { ...r, width_m: w, depth_m: d, area_m2: Math.round(w * d * 100) / 100 } : r
       );
@@ -268,7 +403,7 @@ export default function LotViewer({ project }: LotViewerProps) {
             Visualizador 2D do Lote
           </h2>
           <p className="text-body-sm font-body-sm text-on-surface-variant">
-            Lote: {currentProject.lot_width}m × {currentProject.lot_depth}m ({Math.round(lotArea)}m²) • Recuos: {currentProject.front_setback || 3}m front. / {currentProject.side_setback || 1.5}m lat.
+            Lote: {currentProject.lot_width}m × {currentProject.lot_depth}m ({Math.round(lotArea)}m²) • Encaixe magnético tipo Lego
           </p>
         </div>
 
@@ -386,7 +521,7 @@ export default function LotViewer({ project }: LotViewerProps) {
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
             onMouseLeave={onMouseUp}
-            className="w-full max-w-2xl bg-[#fdfbf7] dark:bg-[#1a1816] rounded-xl border border-outline-variant cursor-crosshair select-none"
+            className="w-full max-w-2xl bg-[#fdfbf7] dark:bg-[#1a1816] rounded-xl border border-outline-variant select-none"
             style={{ minHeight: 320 }}
           >
             <defs>
@@ -464,23 +599,18 @@ export default function LotViewer({ project }: LotViewerProps) {
               const h = room.depth_m * scale;
               const hasConflict = conflicts.has(room.id);
               const isSelected = selectedRoomId === room.id;
-              const isHovered = hoveredRoom?.id === room.id;
+              const isHovered = hoveredRoom?.id === room.id && !dragging && !resizing;
 
               return (
                 <g
                   key={room.id}
                   onMouseDown={(e) => startDrag(e, room)}
-                  onMouseEnter={(e) => {
-                    setHoveredRoom(room);
-                    const rect = svgRef.current?.getBoundingClientRect();
-                    if (rect) {
-                      setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                  onMouseEnter={() => {
+                    if (!dragging && !resizing) {
+                      setHoveredRoom(room);
                     }
                   }}
-                  onMouseLeave={() => {
-                    setHoveredRoom(null);
-                    setTooltipPos(null);
-                  }}
+                  onMouseLeave={() => setHoveredRoom(null)}
                   onClick={() => scrollToRoomCard(room.id)}
                 >
                   <rect
@@ -493,7 +623,10 @@ export default function LotViewer({ project }: LotViewerProps) {
                     strokeWidth={isSelected ? 3 : hasConflict ? 2 : 1}
                     strokeDasharray={hasConflict ? '4 2' : 'none'}
                     rx="4"
-                    style={{ cursor: 'grab', filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' : 'none' }}
+                    style={{
+                      cursor: dragging === room.id ? 'grabbing' : 'grab',
+                      filter: isSelected ? 'drop-shadow(0 2px 5px rgba(0,0,0,0.2))' : 'none',
+                    }}
                   />
 
                   {/* Room name and dimensions */}
@@ -505,7 +638,7 @@ export default function LotViewer({ project }: LotViewerProps) {
                         fontSize={w < 50 ? '8' : '9.5'}
                         fontWeight="600"
                         fill="#1e1b15"
-                        className="select-none"
+                        className="select-none pointer-events-none"
                       >
                         {room.name}
                       </text>
@@ -514,7 +647,7 @@ export default function LotViewer({ project }: LotViewerProps) {
                         y={y + 24}
                         fontSize={w < 50 ? '7.5' : '8.5'}
                         fill="#454840"
-                        className="select-none"
+                        className="select-none pointer-events-none"
                       >
                         {Math.round(room.area_m2)}m² ({room.width_m}×{room.depth_m}m)
                       </text>
@@ -539,28 +672,27 @@ export default function LotViewer({ project }: LotViewerProps) {
             })}
           </svg>
 
-          {/* Hover Tooltip */}
-          {hoveredRoom && tooltipPos && (
-            <div
-              className="absolute z-30 pointer-events-none p-2.5 bg-on-surface text-surface-container-lowest rounded-lg shadow-xl text-xs space-y-1 max-w-[200px]"
-              style={{ left: Math.min(tooltipPos.x + 12, 240), top: Math.max(tooltipPos.y - 40, 10) }}
-            >
-              <div className="font-bold text-sm text-secondary-fixed">{hoveredRoom.name}</div>
-              <div className="text-[11px] opacity-90">
-                Dimensões: {hoveredRoom.width_m}m × {hoveredRoom.depth_m}m ({Math.round(hoveredRoom.area_m2)} m²)
+          {/* Integrated Unobtrusive Status Bar */}
+          <div className="mt-2 p-2 bg-surface-container-lowest rounded-lg border border-outline-variant/60 flex items-center justify-between text-xs text-on-surface-variant">
+            {hoveredRoom ? (
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-on-surface">{hoveredRoom.name}</span>
+                <span>•</span>
+                <span>{hoveredRoom.width_m}m × {hoveredRoom.depth_m}m ({Math.round(hoveredRoom.area_m2)} m²)</span>
+                <span>•</span>
+                <span className="text-secondary font-semibold">
+                  {hoveredRoom.materials && hoveredRoom.materials.length > 0
+                    ? `${hoveredRoom.materials.length} materiais associados`
+                    : 'Sem materiais manuais'}
+                </span>
               </div>
-              {hoveredRoom.materials && hoveredRoom.materials.length > 0 ? (
-                <div className="pt-1 border-t border-white/20 text-[10px]">
-                  <span className="font-semibold block text-primary-fixed">Materiais ({hoveredRoom.materials.length}):</span>
-                  {hoveredRoom.materials.map((m, idx) => (
-                    <span key={idx} className="block truncate">• {m.name}</span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-[10px] text-white/70 italic">Nenhum material customizado</div>
-              )}
-            </div>
-          )}
+            ) : (
+              <span className="italic text-[11px]">
+                💡 Dica: Clique e arraste um cômodo para posicionar. Ele se encaixa automaticamente nas paredes vizinhas (Lego Snap).
+              </span>
+            )}
+            <span className="text-[10px] font-mono opacity-80 shrink-0">Snap: Magnético 0.5m</span>
+          </div>
 
           {/* Floating Contextual Toolbar for Active Room */}
           {activeRoomObj && (
@@ -573,7 +705,7 @@ export default function LotViewer({ project }: LotViewerProps) {
                 </span>
                 {conflicts.has(activeRoomObj.id) && (
                   <span className="px-2 py-0.5 rounded-full bg-error-container text-error text-[10px] font-bold">
-                    Conflito/Recuo
+                    Fora do Recuo / Sobreposição
                   </span>
                 )}
               </div>
@@ -608,7 +740,8 @@ export default function LotViewer({ project }: LotViewerProps) {
         </div>
       ) : (
         <div className="w-full max-w-2xl rounded-xl border border-outline-variant overflow-hidden bg-surface-container-low">
-          <Suspense fallback={<p className="p-4 text-body-sm text-on-surface-variant">Carregando visualizador 3D...</p>}>
+          <Suspense fallback={<p className="p-4 text-body-sm text-on-surface-variant">Carregando visualizador 3D...</p>
+          }>
             <LotViewer3D project={currentProject} />
           </Suspense>
         </div>
