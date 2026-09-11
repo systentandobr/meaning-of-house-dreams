@@ -27,41 +27,96 @@ const ROOM_COLORS: Record<string, string> = {
   corridor: '#f5f5f5',
 };
 
+const WIND_DIRECTIONS: Record<string, { label: string; angle: number; note: string }> = {
+  Sudeste: { label: 'SE ➔ NO (Vento Sudeste)', angle: 135, note: 'Brisa fresca predominante do litoral e montanha' },
+  Sul: { label: 'S ➔ N (Vento Sul)', angle: 180, note: 'Frentes frias do Sul, boa ventilação cruzada' },
+  Nordeste: { label: 'E ➔ O (Vento Leste/Alísios)', angle: 90, note: 'Alísios constantes de Leste' },
+  'Centro-Oeste': { label: 'NE ➔ SO (Vento Nordeste)', angle: 45, note: 'Brisa suave do cerrado' },
+  Norte: { label: 'E ➔ O (Vento Leste)', angle: 90, note: 'Alísios equatoriais úmidos' },
+};
+
+function snap(val: number, step = 0.5): number {
+  return Math.round(val / step) * step;
+}
+
 export default function LotViewer({ project }: LotViewerProps) {
   const [view, setView] = useState<'2d' | '3d'>('2d');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const [resizing, setResizing] = useState<string | null>(null);
   const [localRooms, setLocalRooms] = useState<Room[] | null>(null);
   const [pending, setPending] = useState(false);
+  const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
   const svgRef = useRef<SVGSVGElement | null>(null);
   const { simulate } = useProject();
-  const { draftProject, setDraftProject, startSimulation, isSimulation } = useAppStore();
+  const {
+    draftProject,
+    setDraftProject,
+    startSimulation,
+    isSimulation,
+    selectedRoomId,
+    setSelectedRoomId,
+    activeFloor,
+    setActiveFloor,
+  } = useAppStore();
 
   const currentProject = draftProject ?? project;
-  const rooms = localRooms ?? currentProject.room_schedule?.rooms ?? [];
+  const allRooms = localRooms ?? currentProject.room_schedule?.rooms ?? [];
 
   useEffect(() => {
     setLocalRooms(null);
   }, [currentProject.room_schedule?.rooms]);
 
+  // Scaled dimensions
   const { scale, width, depth, lotX, lotY } = useMemo(() => {
     const w = Math.max(currentProject.lot_width || 12, 1);
     const d = Math.max(currentProject.lot_depth || 25, 1);
-    const maxPx = 360;
-    const s = Math.min(maxPx / w, 260 / d);
+    const maxPx = 340;
+    const s = Math.min(maxPx / w, 240 / d);
     const lw = w * s;
     const ld = d * s;
-    return { scale: s, width: lw, depth: ld, lotX: (400 - lw) / 2, lotY: (300 - ld) / 2 };
+    return { scale: s, width: lw, depth: ld, lotX: (400 - lw) / 2, lotY: (300 - ld) / 2 + 10 };
   }, [currentProject.lot_width, currentProject.lot_depth]);
 
+  // Setbacks envelope
+  const setbacks = useMemo(() => {
+    const front = currentProject.front_setback || 3.0;
+    const side = currentProject.side_setback || 1.5;
+    const back = currentProject.back_setback || 1.5;
+    const sx = lotX + side * scale;
+    const sy = lotY + front * scale;
+    const sw = Math.max(0, (currentProject.lot_width - 2 * side) * scale);
+    const sd = Math.max(0, (currentProject.lot_depth - front - back) * scale);
+    return { front, side, back, sx, sy, sw, sd };
+  }, [currentProject.front_setback, currentProject.side_setback, currentProject.back_setback, currentProject.lot_width, currentProject.lot_depth, lotX, lotY, scale]);
+
+  // Filtered rooms for active floor
+  const rooms = useMemo(() => {
+    if (activeFloor === 0) return allRooms.filter((r) => r.floor === 0);
+    return allRooms.filter((r) => r.floor === activeFloor);
+  }, [allRooms, activeFloor]);
+
+  // Has second floor
+  const hasSecondFloor = useMemo(() => {
+    return allRooms.some((r) => r.floor === 2) || (currentProject.stories || 1) > 1;
+  }, [allRooms, currentProject.stories]);
+
+  // Conflicts calculation
   const conflicts = useMemo(() => {
     const set = new Set<string>();
     for (let i = 0; i < rooms.length; i++) {
       const a = rooms[i];
       if (a.floor === 0) continue;
-      if (a.x < 0 || a.y < 0 || a.x + a.width_m > currentProject.lot_width || a.y + a.depth_m > currentProject.lot_depth) {
+      // Check lot bounds & setbacks
+      const frontM = currentProject.front_setback || 3.0;
+      const sideM = currentProject.side_setback || 1.5;
+      const backM = currentProject.back_setback || 1.5;
+      const maxAllowedX = currentProject.lot_width - sideM;
+      const maxAllowedY = currentProject.lot_depth - backM;
+
+      if (a.x < sideM || a.y < frontM || a.x + a.width_m > maxAllowedX || a.y + a.depth_m > maxAllowedY) {
         set.add(a.id);
       }
       for (let j = 0; j < rooms.length; j++) {
@@ -74,7 +129,15 @@ export default function LotViewer({ project }: LotViewerProps) {
       }
     }
     return set;
-  }, [rooms, currentProject.lot_width, currentProject.lot_depth]);
+  }, [rooms, currentProject.front_setback, currentProject.side_setback, currentProject.back_setback, currentProject.lot_width, currentProject.lot_depth]);
+
+  // Metrics
+  const lotArea = currentProject.lot_area_m2 || currentProject.lot_width * currentProject.lot_depth;
+  const floorArea = rooms.reduce((sum, r) => sum + r.area_m2, 0);
+  const occupancyRate = lotArea > 0 ? Math.round((currentProject.built_area_m2 / lotArea) * 100) : 0;
+  const permeableRate = lotArea > 0 ? Math.round(((currentProject.garden_area_m2 || lotArea * 0.3) / lotArea) * 100) : 30;
+
+  const windInfo = WIND_DIRECTIONS[currentProject.region] || WIND_DIRECTIONS['Sudeste'];
 
   function toSvgM(px: number) {
     return (px - lotX) / scale;
@@ -93,20 +156,23 @@ export default function LotViewer({ project }: LotViewerProps) {
   function startDrag(e: React.MouseEvent, room: Room) {
     e.preventDefault();
     setDragging(room.id);
-    setSelectedRoom(room.id);
+    setSelectedRoomId(room.id);
   }
 
   function startResize(e: React.MouseEvent, room: Room) {
     e.preventDefault();
     e.stopPropagation();
     setResizing(room.id);
-    setSelectedRoom(room.id);
+    setSelectedRoomId(room.id);
   }
 
   async function sendSimulation(updatedRooms: Room[], autoArrange = false) {
     setPending(true);
     try {
-      const p = await simulate(currentProject.id, { room_schedule: { ...currentProject.room_schedule, rooms: updatedRooms }, auto_arrange: autoArrange });
+      const p = await simulate(currentProject.id, {
+        room_schedule: { ...currentProject.room_schedule, rooms: updatedRooms },
+        auto_arrange: autoArrange,
+      });
       setDraftProject(p);
       if (!isSimulation) startSimulation(p);
     } catch (e: any) {
@@ -120,24 +186,24 @@ export default function LotViewer({ project }: LotViewerProps) {
     if (!dragging && !resizing) return;
     const pos = mousePos(e);
     if (dragging) {
-      const room = rooms.find((r) => r.id === dragging);
+      const room = allRooms.find((r) => r.id === dragging);
       if (!room) return;
-      const x = Math.max(0, toSvgM(pos.x) - room.width_m / 2);
-      const y = Math.max(0, toSvgM(pos.y) - room.depth_m / 2);
-      const updated = rooms.map((r) =>
-        r.id === dragging ? { ...r, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 } : r
-      );
+      const rawX = toSvgM(pos.x) - room.width_m / 2;
+      const rawY = toSvgM(pos.y) - room.depth_m / 2;
+      const x = snap(Math.max(0, rawX));
+      const y = snap(Math.max(0, rawY));
+      const updated = allRooms.map((r) => (r.id === dragging ? { ...r, x, y } : r));
       setLocalRooms(updated);
     }
     if (resizing) {
-      const room = rooms.find((r) => r.id === resizing);
+      const room = allRooms.find((r) => r.id === resizing);
       if (!room) return;
-      const w = Math.max(1, toSvgM(pos.x) - room.x);
-      const d = Math.max(1, toSvgM(pos.y) - room.y);
-      const updated = rooms.map((r) =>
-        r.id === resizing
-          ? { ...r, width_m: Math.round(w * 10) / 10, depth_m: Math.round(d * 10) / 10, area_m2: Math.round(w * d * 100) / 100 }
-          : r
+      const rawW = toSvgM(pos.x) - room.x;
+      const rawD = toSvgM(pos.y) - room.y;
+      const w = Math.max(1, snap(rawW));
+      const d = Math.max(1, snap(rawD));
+      const updated = allRooms.map((r) =>
+        r.id === resizing ? { ...r, width_m: w, depth_m: d, area_m2: Math.round(w * d * 100) / 100 } : r
       );
       setLocalRooms(updated);
     }
@@ -153,106 +219,393 @@ export default function LotViewer({ project }: LotViewerProps) {
   }
 
   function handleAutoArrange() {
-    sendSimulation(rooms, true);
+    sendSimulation(allRooms, true);
   }
+
+  function handleRotate(roomId: string) {
+    const updated = allRooms.map((r) => {
+      if (r.id === roomId) {
+        return {
+          ...r,
+          width_m: r.depth_m,
+          depth_m: r.width_m,
+          area_m2: Math.round(r.width_m * r.depth_m * 100) / 100,
+        };
+      }
+      return r;
+    });
+    setLocalRooms(updated);
+    sendSimulation(updated);
+  }
+
+  function handleDeleteRoom(roomId: string) {
+    const updated = allRooms.filter((r) => r.id !== roomId);
+    setLocalRooms(updated);
+    sendSimulation(updated);
+    setSelectedRoomId(null);
+  }
+
+  function scrollToRoomCard(roomId: string) {
+    setSelectedRoomId(roomId);
+    const el = document.getElementById(`room-card-${roomId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  const activeRoomObj = allRooms.find((r) => r.id === selectedRoomId);
 
   return (
     <section className="space-y-4" id="lote">
-      <div className="flex items-center justify-between">
+      {/* Header with Title & Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">Visualizador do lote</h2>
+          <div className="flex items-center gap-2 text-label-sm font-label-sm font-bold text-secondary uppercase tracking-wider">
+            <Icon name="grid_view" className="text-[16px]" />
+            Planta & Layout do Terreno
+          </div>
+          <h2 className="text-headline-sm font-headline-sm font-semibold text-on-surface">
+            Visualizador 2D do Lote
+          </h2>
           <p className="text-body-sm font-body-sm text-on-surface-variant">
-            Lote: {currentProject.lot_width}m × {currentProject.lot_depth}m ({Math.round(currentProject.lot_area_m2)}m²)
+            Lote: {currentProject.lot_width}m × {currentProject.lot_depth}m ({Math.round(lotArea)}m²) • Recuos: {currentProject.front_setback || 3}m front. / {currentProject.side_setback || 1.5}m lat.
           </p>
         </div>
+
         <div className="flex items-center gap-2">
           <button
             onClick={handleAutoArrange}
             disabled={pending}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-body-sm hover:border-primary disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-body-sm hover:border-primary disabled:opacity-60 font-medium"
+            title="Auto-organizar cômodos dentro do envelope construtivo"
           >
             <Icon name="auto_awesome_mosaic" className="text-[16px]" />
             Rearranjar
           </button>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-lg bg-surface-container border border-outline-variant hover:border-primary"
-            title="Configurar terreno"
+            className="p-2 rounded-lg bg-surface-container border border-outline-variant hover:border-primary text-primary"
+            title="Configurar dimensões e recuos do terreno"
           >
-            <Icon name="settings" className="text-[18px] text-primary" />
+            <Icon name="tune" className="text-[18px]" />
           </button>
-          <div className="flex gap-2">
-            <button onClick={() => setView('2d')} disabled={view === '2d'} className="px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-body-sm disabled:opacity-50">
+          <div className="flex bg-surface-container rounded-lg p-0.5 border border-outline-variant">
+            <button
+              onClick={() => setView('2d')}
+              className={`px-3 py-1 rounded-md text-label-sm font-semibold transition-colors ${
+                view === '2d' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
               2D
             </button>
-            <button onClick={() => setView('3d')} disabled={view === '3d'} className="px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-body-sm disabled:opacity-50">
+            <button
+              onClick={() => setView('3d')}
+              className={`px-3 py-1 rounded-md text-label-sm font-semibold transition-colors ${
+                view === '3d' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
               3D
             </button>
           </div>
         </div>
       </div>
 
+      {/* KPI Ribbons & Floor Tabs */}
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-surface-container-low rounded-xl border border-outline-variant">
+        {/* Floor Tabs */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setActiveFloor(1)}
+            className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold flex items-center gap-1.5 transition-colors ${
+              activeFloor === 1
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:bg-surface-container'
+            }`}
+          >
+            <Icon name="home" className="text-[16px]" />
+            Térreo
+          </button>
+          {hasSecondFloor && (
+            <button
+              onClick={() => setActiveFloor(2)}
+              className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold flex items-center gap-1.5 transition-colors ${
+                activeFloor === 2
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container'
+              }`}
+            >
+              <Icon name="apartment" className="text-[16px]" />
+              2º Pavimento
+            </button>
+          )}
+          <button
+            onClick={() => setActiveFloor(0)}
+            className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold flex items-center gap-1.5 transition-colors ${
+              activeFloor === 0
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:bg-surface-container'
+            }`}
+          >
+            <Icon name="yard" className="text-[16px]" />
+            Áreas Externas
+          </button>
+        </div>
+
+        {/* Real-time KPI Badges */}
+        <div className="flex items-center gap-3 text-label-sm">
+          <div className="flex items-center gap-1">
+            <span className="text-on-surface-variant">Taxa de Ocupação:</span>
+            <span
+              className={`font-bold px-2 py-0.5 rounded-full ${
+                occupancyRate <= 50
+                  ? 'bg-primary-fixed text-on-primary-fixed'
+                  : occupancyRate <= 70
+                    ? 'bg-secondary-fixed text-on-secondary-fixed'
+                    : 'bg-error-container text-on-error-container'
+              }`}
+            >
+              {occupancyRate}%
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-on-surface-variant">Área Permeável:</span>
+            <span className="font-bold text-primary">{permeableRate}%</span>
+          </div>
+          <div className="flex items-center gap-1 hidden md:flex">
+            <span className="text-on-surface-variant">Área Pavimento:</span>
+            <span className="font-bold text-on-surface">{Math.round(floorArea)} m²</span>
+          </div>
+        </div>
+      </div>
+
       {view === '2d' ? (
-        <svg
-          ref={svgRef}
-          viewBox="0 0 400 300"
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
-          className="w-full max-w-2xl bg-surface-container-low rounded-xl border border-outline-variant cursor-crosshair select-none"
-          style={{ minHeight: 300 }}
-        >
-          <rect x={lotX} y={lotY} width={width} height={depth} fill="#f0e9df" stroke="#767870" strokeWidth="2" />
+        <div className="relative">
+          <svg
+            ref={svgRef}
+            viewBox="0 0 400 320"
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+            className="w-full max-w-2xl bg-[#fdfbf7] dark:bg-[#1a1816] rounded-xl border border-outline-variant cursor-crosshair select-none"
+            style={{ minHeight: 320 }}
+          >
+            <defs>
+              <marker id="arrow-n" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L8,3 z" fill="#ba1a1a" />
+              </marker>
+              <marker id="arrow-wind" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L8,3 z" fill="#006495" />
+              </marker>
+              <pattern id="lot-grid" width={0.5 * scale * 2} height={0.5 * scale * 2} patternUnits="userSpaceOnUse">
+                <path d={`M ${0.5 * scale * 2} 0 L 0 0 0 ${0.5 * scale * 2}`} fill="none" stroke="#e6e1d9" strokeWidth="0.5" />
+              </pattern>
+            </defs>
 
-          {rooms.map((room) => {
-            if (room.floor === 0 || room.floor === 2) return null;
-            const x = toSvgPx(room.x);
-            const y = toSvgPx(room.y);
-            const w = room.width_m * scale;
-            const h = room.depth_m * scale;
-            const hasConflict = conflicts.has(room.id);
-            const isSelected = selectedRoom === room.id;
-            return (
-              <g key={room.id} onMouseDown={(e) => startDrag(e, room)}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={w}
-                  height={h}
-                  fill={ROOM_COLORS[room.type] || '#ffffff'}
-                  stroke={isSelected ? '#3a4f41' : hasConflict ? '#ba1a1a' : '#4a463f'}
-                  strokeWidth={isSelected ? 2.5 : 1}
-                  rx="2"
-                  style={{ cursor: 'grab' }}
-                />
-                {w > 40 && h > 20 && (
-                  <>
-                    <text x={x + 4} y={y + 14} fontSize="10" fill="#1e1b15">{room.name}</text>
-                    <text x={x + 4} y={y + 26} fontSize="9" fill="#454840">{Math.round(room.area_m2)}m²</text>
-                  </>
-                )}
-                {isSelected && (
-                  <circle
-                    cx={x + w - 6}
-                    cy={y + h - 6}
-                    r={5}
-                    fill="#3a4f41"
-                    style={{ cursor: 'se-resize' }}
-                    onMouseDown={(e) => startResize(e, room)}
+            {/* Lot boundary and grid */}
+            <rect x={lotX} y={lotY} width={width} height={depth} fill="#f4eee4" stroke="#767870" strokeWidth="2" />
+            <rect x={lotX} y={lotY} width={width} height={depth} fill="url(#lot-grid)" />
+
+            {/* Setback envelope (dashed boundary) */}
+            <rect
+              x={setbacks.sx}
+              y={setbacks.sy}
+              width={setbacks.sw}
+              height={setbacks.sd}
+              fill="#e8f5e9"
+              fillOpacity="0.4"
+              stroke="#3a4f41"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+            />
+            <text x={setbacks.sx + 4} y={setbacks.sy + 12} fontSize="8" fill="#3a4f41" fontWeight="bold">
+              Envelope Construtivo (Recuos)
+            </text>
+
+            {/* Sun Trajectory Arc (East to West) */}
+            <path
+              d={`M ${lotX + width + 15} ${lotY + depth / 2} A 160 160 0 0 0 ${lotX - 15} ${lotY + depth / 2}`}
+              fill="none"
+              stroke="#e5a100"
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+              opacity="0.7"
+            />
+            <g transform={`translate(${lotX + width + 15}, ${lotY + depth / 2})`}>
+              <circle r="6" fill="#e5a100" />
+              <text x="8" y="3" fontSize="8" fill="#b27d00" fontWeight="bold">Leste (Manhã)</text>
+            </g>
+            <g transform={`translate(${lotX - 15}, ${lotY + depth / 2})`}>
+              <circle r="6" fill="#d97706" />
+              <text x="-58" y="3" fontSize="8" fill="#b45309" fontWeight="bold">Oeste (Tarde)</text>
+            </g>
+
+            {/* Predominant Wind Vector */}
+            <g transform={`translate(${lotX + 25}, ${lotY + depth - 20}) rotate(${windInfo.angle})`}>
+              <line x1="0" y1="0" x2="25" y2="0" stroke="#006495" strokeWidth="2" markerEnd="url(#arrow-wind)" />
+              <text x="30" y="3" fontSize="7" fill="#006495" fontWeight="bold">Vento ({windInfo.label.split(' ')[0]})</text>
+            </g>
+
+            {/* Compass Rose / North Indicator */}
+            <g transform={`translate(${lotX + width - 25}, ${lotY + 25})`}>
+              <circle r="14" fill="#ffffff" stroke="#767870" strokeWidth="1" opacity="0.9" />
+              <line x1="0" y1="12" x2="0" y2="-12" stroke="#ba1a1a" strokeWidth="2" markerEnd="url(#arrow-n)" />
+              <line x1="-10" y1="0" x2="10" y2="0" stroke="#767870" strokeWidth="1" />
+              <text x="-3" y="-14" fontSize="8" fill="#ba1a1a" fontWeight="bold">N</text>
+              <text x="-3" y="20" fontSize="7" fill="#767870">S</text>
+              <text x="13" y="3" fontSize="7" fill="#767870">L</text>
+              <text x="-19" y="3" fontSize="7" fill="#767870">O</text>
+            </g>
+
+            {/* Render Rooms */}
+            {rooms.map((room) => {
+              const x = toSvgPx(room.x);
+              const y = toSvgPx(room.y);
+              const w = room.width_m * scale;
+              const h = room.depth_m * scale;
+              const hasConflict = conflicts.has(room.id);
+              const isSelected = selectedRoomId === room.id;
+              const isHovered = hoveredRoom?.id === room.id;
+
+              return (
+                <g
+                  key={room.id}
+                  onMouseDown={(e) => startDrag(e, room)}
+                  onMouseEnter={(e) => {
+                    setHoveredRoom(room);
+                    const rect = svgRef.current?.getBoundingClientRect();
+                    if (rect) {
+                      setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredRoom(null);
+                    setTooltipPos(null);
+                  }}
+                  onClick={() => scrollToRoomCard(room.id)}
+                >
+                  <rect
+                    x={x}
+                    y={y}
+                    width={w}
+                    height={h}
+                    fill={ROOM_COLORS[room.type] || '#ffffff'}
+                    stroke={isSelected ? '#3a4f41' : hasConflict ? '#ba1a1a' : isHovered ? '#1e1b15' : '#767870'}
+                    strokeWidth={isSelected ? 3 : hasConflict ? 2 : 1}
+                    strokeDasharray={hasConflict ? '4 2' : 'none'}
+                    rx="4"
+                    style={{ cursor: 'grab', filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' : 'none' }}
                   />
-                )}
-              </g>
-            );
-          })}
 
-          <line x1={lotX + width - 20} y1={lotY + 20} x2={lotX + width - 20} y2={lotY + 50} stroke="#ba1a1a" strokeWidth="2" markerEnd="url(#arrow)" />
-          <defs>
-            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,6 L9,3 z" fill="#ba1a1a" />
-            </marker>
-          </defs>
-          <text x={lotX + width - 30} y={lotY + 15} fontSize="10" fill="#ba1a1a" fontWeight="bold">N</text>
-        </svg>
+                  {/* Room name and dimensions */}
+                  {w > 35 && h > 20 && (
+                    <>
+                      <text
+                        x={x + 4}
+                        y={y + 13}
+                        fontSize={w < 50 ? '8' : '9.5'}
+                        fontWeight="600"
+                        fill="#1e1b15"
+                        className="select-none"
+                      >
+                        {room.name}
+                      </text>
+                      <text
+                        x={x + 4}
+                        y={y + 24}
+                        fontSize={w < 50 ? '7.5' : '8.5'}
+                        fill="#454840"
+                        className="select-none"
+                      >
+                        {Math.round(room.area_m2)}m² ({room.width_m}×{room.depth_m}m)
+                      </text>
+                    </>
+                  )}
+
+                  {/* Resize handle on selected room */}
+                  {isSelected && (
+                    <circle
+                      cx={x + w - 6}
+                      cy={y + h - 6}
+                      r={5}
+                      fill="#3a4f41"
+                      stroke="#ffffff"
+                      strokeWidth="1.5"
+                      style={{ cursor: 'se-resize' }}
+                      onMouseDown={(e) => startResize(e, room)}
+                    />
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* Hover Tooltip */}
+          {hoveredRoom && tooltipPos && (
+            <div
+              className="absolute z-30 pointer-events-none p-2.5 bg-on-surface text-surface-container-lowest rounded-lg shadow-xl text-xs space-y-1 max-w-[200px]"
+              style={{ left: Math.min(tooltipPos.x + 12, 240), top: Math.max(tooltipPos.y - 40, 10) }}
+            >
+              <div className="font-bold text-sm text-secondary-fixed">{hoveredRoom.name}</div>
+              <div className="text-[11px] opacity-90">
+                Dimensões: {hoveredRoom.width_m}m × {hoveredRoom.depth_m}m ({Math.round(hoveredRoom.area_m2)} m²)
+              </div>
+              {hoveredRoom.materials && hoveredRoom.materials.length > 0 ? (
+                <div className="pt-1 border-t border-white/20 text-[10px]">
+                  <span className="font-semibold block text-primary-fixed">Materiais ({hoveredRoom.materials.length}):</span>
+                  {hoveredRoom.materials.map((m, idx) => (
+                    <span key={idx} className="block truncate">• {m.name}</span>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-[10px] text-white/70 italic">Nenhum material customizado</div>
+              )}
+            </div>
+          )}
+
+          {/* Floating Contextual Toolbar for Active Room */}
+          {activeRoomObj && (
+            <div className="mt-3 p-3 bg-surface-container rounded-xl border border-outline-variant flex flex-wrap items-center justify-between gap-2 shadow-sm animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary" />
+                <span className="text-body-md font-bold text-on-surface">{activeRoomObj.name}</span>
+                <span className="text-label-sm text-on-surface-variant">
+                  ({activeRoomObj.width_m}m × {activeRoomObj.depth_m}m = {Math.round(activeRoomObj.area_m2)}m²)
+                </span>
+                {conflicts.has(activeRoomObj.id) && (
+                  <span className="px-2 py-0.5 rounded-full bg-error-container text-error text-[10px] font-bold">
+                    Conflito/Recuo
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleRotate(activeRoomObj.id)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant hover:border-primary text-label-sm font-semibold"
+                  title="Girar 90 graus"
+                >
+                  <Icon name="rotate_right" className="text-[16px]" />
+                  Girar 90°
+                </button>
+                <button
+                  onClick={() => scrollToRoomCard(activeRoomObj.id)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-secondary text-on-secondary text-label-sm font-semibold shadow-sm"
+                  title="Abrir detalhes e materiais"
+                >
+                  <Icon name="tune" className="text-[16px]" />
+                  Editar Card
+                </button>
+                <button
+                  onClick={() => handleDeleteRoom(activeRoomObj.id)}
+                  className="p-1.5 rounded-lg bg-error text-on-error hover:bg-error-container text-label-sm font-semibold"
+                  title="Excluir cômodo"
+                >
+                  <Icon name="delete" className="text-[16px]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="w-full max-w-2xl rounded-xl border border-outline-variant overflow-hidden bg-surface-container-low">
           <Suspense fallback={<p className="p-4 text-body-sm text-on-surface-variant">Carregando visualizador 3D...</p>}>
@@ -261,6 +614,7 @@ export default function LotViewer({ project }: LotViewerProps) {
         </div>
       )}
 
+      {/* Drawer */}
       <LotSettingsDrawer project={currentProject} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </section>
   );

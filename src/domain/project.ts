@@ -17,6 +17,8 @@ export interface Phase {
   status: 'planned' | 'in_progress' | 'completed';
   tasks: Task[];
   sustainability_notes: string;
+  estimated_budget?: number;
+  spent_budget?: number;
 }
 
 export interface RoomMaterial {

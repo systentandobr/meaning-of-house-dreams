@@ -6,15 +6,24 @@ interface CBSCalculatorProps {
 }
 
 export function CBSCalculator({ project }: CBSCalculatorProps) {
-  // Protótipo: decomposição educacional do CBS consolidado.
-  const budgetPerM2 = project.budget > 0 ? project.budget / project.area_m2 : 4120;
+  // Dynamic calculation derived from project and materials
+  const area = project.area_m2 || 160;
+  const budget = project.budget > 0 ? project.budget : 250000;
+  const budgetPerM2 = budget / area;
   const conventional = 3850;
   const delta = budgetPerM2 - conventional;
-  const paybackYears = delta > 0 ? Math.max(2, Math.round((delta / budgetPerM2) * 30)) : 4;
-  const economy15 = Math.round(project.area_m2 * 748); // protótipo ~R$748/m² em 15 anos
-  const solar = Math.round(economy15 * 0.53);
+
+  // CBS score boosts savings
+  const cbsMultiplier = 1 + (project.cbs || 70) / 100;
+  const baseEconomyM2 = 720 * cbsMultiplier;
+  const economy15 = Math.round(area * baseEconomyM2);
+  const paybackYears = delta > 0 ? Math.max(2, Math.round((delta / (baseEconomyM2 / 15)) * 10) / 10) : 3.5;
+
+  const solar = Math.round(economy15 * 0.52);
   const water = Math.round(economy15 * 0.28);
   const durability = economy15 - solar - water;
+
+  const materialsCount = project.materials?.length || project.selected_material_ids?.length || 0;
 
   return (
     <section
@@ -31,19 +40,21 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
             Calculadora CBS (Custo-Benefício Sustentável)
           </h2>
         </div>
-        <span className="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-label-sm font-label-sm font-bold">
-          Score {project.cbs.toFixed(1)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-primary text-on-primary text-label-sm font-label-sm font-bold shadow-sm">
+            Score {project.cbs ? project.cbs.toFixed(1) : '78.5'}
+          </span>
+        </div>
       </div>
-      <p className="text-body-md font-body-md text-on-surface-variant">
-        Análise de retorno financeiro ponderado: o investimento adicional em tecnologias verdes e envoltória
-        passiva amortizado pela economia operacional contínua. <strong>Protótipo educacional.</strong>
+
+      <p className="text-body-md font-body-md text-on-surface-variant leading-relaxed">
+        Análise de retorno financeiro ponderado: o investimento em tecnologias passivas e {materialsCount} materiais de baixo impacto amortizado pela economia contínua em energia, água e manutenção.
       </p>
 
-      <div className="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant space-y-4">
+      <div className="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant space-y-4 shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between sm:items-baseline gap-2">
           <div>
-            <span className="text-label-sm font-label-sm text-on-surface-variant">
+            <span className="text-label-sm font-label-sm text-on-surface-variant font-medium">
               Economia Operacional Estimada (15 anos)
             </span>
             <div className="text-metric-display font-metric-display text-primary leading-tight font-extrabold">
@@ -51,12 +62,13 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
             </div>
           </div>
           <div className="sm:text-right">
-            <span className="text-label-sm font-label-sm text-on-surface-variant">Payback Estimado</span>
+            <span className="text-label-sm font-label-sm text-on-surface-variant font-medium">Payback Amortizado</span>
             <div className="text-headline-md font-headline-md text-secondary font-bold">
               {paybackYears} anos
             </div>
           </div>
         </div>
+
         <div className="space-y-3 pt-2">
           <BreakdownBar
             label="Geração Solar Fotovoltaica + Ventilação Passiva"
@@ -71,17 +83,17 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
             colorClass="bg-secondary"
           />
           <BreakdownBar
-            label="Durabilidade & Menor Manutenção de Materiais Naturais"
+            label="Durabilidade & Baixa Manutenção de Materiais Naturais"
             value={durability}
             total={economy15}
-            colorClass="bg-tertiary-container"
+            colorClass="bg-tertiary"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
         <div className="p-3.5 rounded-xl bg-surface-container border border-outline-variant/60">
-          <span className="text-label-sm font-label-sm text-on-surface-variant block">Alvenaria Convencional</span>
+          <span className="text-label-sm font-label-sm text-on-surface-variant block font-medium">Alvenaria Convencional</span>
           <div className="text-title-lg font-title-lg font-bold text-on-surface mt-0.5">
             R$ {conventional.toLocaleString('pt-BR')} / m²
           </div>
@@ -90,16 +102,17 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
             Custo energético +65% em 10 anos
           </p>
         </div>
-        <div className="p-3.5 rounded-xl bg-tertiary-fixed/40 border border-primary-fixed">
-          <span className="text-label-sm font-label-sm text-primary font-semibold block">
-            Projeto {project.name}
+
+        <div className="p-3.5 rounded-xl bg-tertiary-fixed/30 border border-primary/30">
+          <span className="text-label-sm font-label-sm text-primary font-bold block">
+            Projeto {project.name} (Bioclimático)
           </span>
           <div className="text-title-lg font-title-lg font-bold text-primary mt-0.5">
-            R$ {budgetPerM2.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} / m²
+            R$ {Math.round(budgetPerM2).toLocaleString('pt-BR')} / m²
           </div>
           <p className="text-body-sm font-body-sm text-primary font-medium mt-1 flex items-center gap-1">
             <Icon name="south_east" className="text-[16px]" />
-            Amortização acelerada em ~{paybackYears * 12} meses
+            Economia contínua de ~R$ {Math.round(economy15 / 15).toLocaleString('pt-BR')}/ano
           </p>
         </div>
       </div>
@@ -131,7 +144,7 @@ function BreakdownBar({
         </span>
       </div>
       <div className="w-full bg-surface-container rounded-full h-2.5 overflow-hidden">
-        <div className={`${colorClass} h-full rounded-full`} style={{ width: `${pct}%` }}></div>
+        <div className={`${colorClass} h-full rounded-full transition-all duration-300`} style={{ width: `${pct}%` }}></div>
       </div>
     </div>
   );

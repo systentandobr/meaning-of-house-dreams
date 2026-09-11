@@ -12,6 +12,12 @@ interface AppState {
   setDraftProject: (p: Project | null) => void;
   startSimulation: (p: Project) => void;
   stopSimulation: () => void;
+  selectedRoomId: string | null;
+  setSelectedRoomId: (id: string | null) => void;
+  hoveredRoomId: string | null;
+  setHoveredRoomId: (id: string | null) => void;
+  activeFloor: number;
+  setActiveFloor: (floor: number) => void;
   reset: () => void;
 }
 
@@ -33,5 +39,20 @@ export const useAppStore = create<AppState>((set) => ({
   setDraftProject: (p) => set({ draftProject: p, isSimulation: p !== null }),
   startSimulation: (p) => set({ draftProject: p, isSimulation: true }),
   stopSimulation: () => set({ draftProject: null, isSimulation: false }),
-  reset: () => set({ region: DEFAULT_REGION, selectedMaterialIds: [], isSimulation: false, draftProject: null }),
+  selectedRoomId: null,
+  setSelectedRoomId: (selectedRoomId) => set({ selectedRoomId }),
+  hoveredRoomId: null,
+  setHoveredRoomId: (hoveredRoomId) => set({ hoveredRoomId }),
+  activeFloor: 1,
+  setActiveFloor: (activeFloor) => set({ activeFloor }),
+  reset: () =>
+    set({
+      region: DEFAULT_REGION,
+      selectedMaterialIds: [],
+      isSimulation: false,
+      draftProject: null,
+      selectedRoomId: null,
+      hoveredRoomId: null,
+      activeFloor: 1,
+    }),
 }));
