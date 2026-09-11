@@ -18,6 +18,10 @@ interface AppState {
   setHoveredRoomId: (id: string | null) => void;
   activeFloor: number;
   setActiveFloor: (floor: number) => void;
+  magneticSnapEnabled: boolean;
+  setMagneticSnapEnabled: (enabled: boolean) => void;
+  wallThickness: number;
+  setWallThickness: (thickness: number) => void;
   reset: () => void;
 }
 
@@ -45,6 +49,10 @@ export const useAppStore = create<AppState>((set) => ({
   setHoveredRoomId: (hoveredRoomId) => set({ hoveredRoomId }),
   activeFloor: 1,
   setActiveFloor: (activeFloor) => set({ activeFloor }),
+  magneticSnapEnabled: true,
+  setMagneticSnapEnabled: (magneticSnapEnabled) => set({ magneticSnapEnabled }),
+  wallThickness: 0.15,
+  setWallThickness: (wallThickness) => set({ wallThickness }),
   reset: () =>
     set({
       region: DEFAULT_REGION,
@@ -54,5 +62,7 @@ export const useAppStore = create<AppState>((set) => ({
       selectedRoomId: null,
       hoveredRoomId: null,
       activeFloor: 1,
+      magneticSnapEnabled: true,
+      wallThickness: 0.15,
     }),
 }));

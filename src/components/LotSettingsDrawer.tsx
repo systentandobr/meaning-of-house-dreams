@@ -12,7 +12,15 @@ interface LotSettingsDrawerProps {
 
 export function LotSettingsDrawer({ project, open, onClose }: LotSettingsDrawerProps) {
   const { simulate, update } = useProject();
-  const { setDraftProject, isSimulation, startSimulation } = useAppStore();
+  const {
+    setDraftProject,
+    isSimulation,
+    startSimulation,
+    magneticSnapEnabled,
+    setMagneticSnapEnabled,
+    wallThickness,
+    setWallThickness,
+  } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [width, setWidth] = useState(project.lot_width);
   const [depth, setDepth] = useState(project.lot_depth);
@@ -103,6 +111,41 @@ export function LotSettingsDrawer({ project, open, onClose }: LotSettingsDrawerP
           <NumberField label="Recuo frontal (m)" value={front} onChange={setFront} min={0} max={20} />
           <NumberField label="Recuo lateral (m)" value={side} onChange={setSide} min={0} max={20} />
           <NumberField label="Recuo fundos (m)" value={back} onChange={setBack} min={0} max={20} />
+
+          <div className="pt-2 border-t border-outline-variant/60 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-label-sm font-semibold text-on-surface block">
+                  Encaixe Magnético (Lego Wall Snap)
+                </label>
+                <span className="text-[11px] text-on-surface-variant block">
+                  Une paredes de cômodos e alinha ao envelope construtivo
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={magneticSnapEnabled}
+                onChange={(e) => setMagneticSnapEnabled(e.target.checked)}
+                className="w-4 h-4 accent-primary rounded cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">
+                Espessura Padrão das Paredes (Engenharia NBR)
+              </label>
+              <select
+                value={wallThickness}
+                onChange={(e) => setWallThickness(Number(e.target.value))}
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-md"
+              >
+                <option value={0.15}>0,15m (15cm - Alvenaria Convencional / NBR)</option>
+                <option value={0.20}>0,20m (20cm - Tijolo Ecológico / Estrutural)</option>
+                <option value={0.10}>0,10m (10cm - Drywall / Divisória Leve)</option>
+                <option value={0.25}>0,25m (25cm - Parede Dupla / Alta Inércia Térmica)</option>
+              </select>
+            </div>
+          </div>
 
           <div className="p-3 rounded-lg bg-surface-container border border-outline-variant">
             <span className="text-label-sm text-on-surface-variant block">Área do lote</span>
