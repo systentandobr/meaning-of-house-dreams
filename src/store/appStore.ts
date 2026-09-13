@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Project } from '../domain/project';
 
 interface AppState {
@@ -27,7 +28,7 @@ interface AppState {
 
 const DEFAULT_REGION = 'Sudeste';
 
-export const useAppStore = create<AppState>((set) => ({
+export const useAppStore = create<AppState>()(persist((set) => ({
   region: DEFAULT_REGION,
   setRegion: (region) => set({ region }),
   selectedMaterialIds: [],
@@ -65,4 +66,4 @@ export const useAppStore = create<AppState>((set) => ({
       magneticSnapEnabled: true,
       wallThickness: 0.15,
     }),
-}));
+}), { name: 'casa:user-prefs', partialize: (state) => ({ activeFloor: state.activeFloor, wallThickness: state.wallThickness, magneticSnapEnabled: state.magneticSnapEnabled }) }));

@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import type { Project } from '../domain/project';
+import { useAppStore } from '../store/appStore';
 
 interface LotViewer3DProps {
   project: Project;
@@ -26,7 +27,8 @@ export function LotViewer3D({ project }: LotViewer3DProps) {
   const lotW = Math.max(project.lot_width || 12, 1);
   const lotD = Math.max(project.lot_depth || 25, 1);
   const rooms = project.room_schedule?.rooms ?? [];
-  const firstFloorRooms = rooms.filter((r) => r.floor === 1);
+  const activeFloor = useAppStore((s) => s.activeFloor);
+  const firstFloorRooms = rooms.filter((r) => r.floor === activeFloor);
 
   // Center the lot around origin.
   const offsetX = -lotW / 2;
@@ -78,7 +80,7 @@ export function LotViewer3D({ project }: LotViewer3DProps) {
 
       {/* Garden / outdoor areas on ground */}
       {rooms
-        .filter((r) => r.floor === 0)
+        .filter((r) => r.floor === 0 && activeFloor === 0)
         .map((room) => {
           const color = TYPE_COLORS[room.type] || '#81c784';
           const x = offsetX + room.x + room.width_m / 2;

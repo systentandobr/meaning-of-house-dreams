@@ -1,6 +1,8 @@
 import { Icon } from './Icon';
 import { RoomEditorCard } from './RoomEditorCard';
 import type { Project, Room } from '../domain/project';
+import { FloorSelector } from './FloorSelector';
+import { useAppStore } from '../store/appStore';
 
 interface RoomScheduleProps {
   project: Project;
@@ -9,6 +11,7 @@ interface RoomScheduleProps {
 export function RoomSchedule({ project }: RoomScheduleProps) {
   const schedule = project.room_schedule;
   const rooms = schedule?.rooms ?? [];
+  const activeFloor = useAppStore((state) => state.activeFloor);
 
   const firstFloor = rooms.filter((r) => r.floor === 1);
   const secondFloor = rooms.filter((r) => r.floor === 2);
@@ -40,10 +43,10 @@ export function RoomSchedule({ project }: RoomScheduleProps) {
       </div>
 
       <p className="text-body-sm font-body-sm text-on-surface-variant">{schedule?.notes}</p>
-
-      <FloorSection title="Térreo / Primeiro pavimento" rooms={firstFloor} project={project} />
-      {secondFloor.length > 0 && <FloorSection title="Segundo pavimento" rooms={secondFloor} project={project} />}
-      {outdoor.length > 0 && <FloorSection title="Áreas externas" rooms={outdoor} project={project} />}
+      <FloorSelector project={project} compact />
+      {activeFloor === 1 && <FloorSection title="Térreo / Primeiro pavimento" rooms={firstFloor} project={project} />}
+      {activeFloor === 2 && <FloorSection title="Segundo pavimento" rooms={secondFloor} project={project} />}
+      {activeFloor === 0 && <FloorSection title="Áreas externas" rooms={outdoor} project={project} />}
     </section>
   );
 }

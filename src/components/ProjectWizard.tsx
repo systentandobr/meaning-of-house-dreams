@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from './Icon';
-import type { CreateProjectInput, Project, Discovery } from '../domain/project';
+import type { CreateProjectInput, Project, Discovery, ConstructionProfile } from '../domain/project';
 
 interface ProjectWizardProps {
   open: boolean;
@@ -66,6 +66,7 @@ export function ProjectWizard({
   const [lotShape, setLotShape] = useState('regular');
   const [stories, setStories] = useState('1');
   const [budget, setBudget] = useState('500000');
+  const [profile, setProfile] = useState<ConstructionProfile>({ construction_method: 'alvenaria_convencional', finish_standard: 'medio', material_preferences: { sustainability_weight: 0.5, budget_weight: 0.5, regional_availability: true, deadline_weight: 0.3, aesthetic_style: 'biophilic' } });
 
   const [discovery, setDiscovery] = useState<Discovery>({
     adults: 2,
@@ -185,6 +186,7 @@ export function ProjectWizard({
         stories: Number(stories) || 1,
         rooms: discovery.bedrooms,
         has_garden: discovery.garden.length > 0,
+        profile,
       };
       await onCreate(input);
       onClose();
@@ -263,6 +265,8 @@ export function ProjectWizard({
             <StepConfirm
               suggestions={suggestions}
               discovery={discovery}
+              profile={profile}
+              setProfile={setProfile}
               onCreate={handleCreate}
               submitting={submitting}
               error={error}
@@ -414,7 +418,7 @@ function StepDiscovery({ discovery, setDiscovery, onNext }: any) {
   );
 }
 
-function StepConfirm({ suggestions, discovery, onCreate, submitting, error }: any) {
+function StepConfirm({ suggestions, discovery, profile, setProfile, onCreate, submitting, error }: any) {
   return (
     <div className="bg-surface-container-low rounded-xl border border-outline-variant p-space-md space-y-4">
       <p className="text-body-md text-on-surface">Ajuste se quiser, ou confirme para gerar o plano.</p>
@@ -426,6 +430,10 @@ function StepConfirm({ suggestions, discovery, onCreate, submitting, error }: an
       </div>
       <div className="p-3 rounded-lg bg-surface-container border border-outline-variant text-body-sm text-on-surface-variant">
         Programa: {discovery.bedrooms} quarto(s), {discovery.suites} suíte(s), {discovery.bathrooms} banheiro(s), estilo {discovery.style}. Recuos, ventilação cruzada e acessibilidade serão considerados no desenho.
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Método construtivo"><select value={profile.construction_method} onChange={(e) => setProfile({ ...profile, construction_method: e.target.value })} className="w-full rounded-lg px-3 py-2 border"><option value="alvenaria_convencional">Alvenaria convencional</option><option value="alvenaria_estrutural">Alvenaria estrutural</option><option value="steel_frame">Steel frame</option><option value="wood_frame">Wood frame</option><option value="concreto_moldado">Concreto moldado</option><option value="modular">Modular</option></select></Field>
+        <Field label="Padrão de acabamento"><select value={profile.finish_standard} onChange={(e) => setProfile({ ...profile, finish_standard: e.target.value })} className="w-full rounded-lg px-3 py-2 border"><option value="economico">Econômico</option><option value="medio">Médio</option><option value="alto_padrao">Alto padrão</option></select></Field>
       </div>
       {error && <p className="text-body-sm text-error">{error}</p>}
       <button onClick={onCreate} disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary shadow-sm font-bold disabled:opacity-60">

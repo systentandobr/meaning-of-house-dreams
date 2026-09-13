@@ -3,6 +3,7 @@ import { projectService } from '../services/projectService';
 import type { UpdateProjectInput } from '../services/projectService';
 import type { CreateProjectInput, Project } from '../domain/project';
 import type { RoomEstimate } from '../services/projectService';
+import { ENV_CONFIG } from '../config/env';
 
 const STORAGE_KEY = 'casa-dos-sonhos:project-id';
 
@@ -81,6 +82,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         .finally(() => setLoading(false));
     }
   }, [loadById]);
+
+  useEffect(() => {
+    if (!project?.id) return;
+    const base = ENV_CONFIG.API_BASE_URL;
+    const stream = new EventSource(`${base}/api/v1/projects/${project.id}/events`);
+    stream.addEventListener('project_updated', () => { loadById(project.id); });
+    stream.onerror = () => { /* HTTP fallback remains usable while backend is offline. */ };
+    return () => stream.close();
+  }, [project?.id, loadById]);
 
   const create = useCallback(async (input: CreateProjectInput) => {
     setLoading(true);

@@ -76,6 +76,11 @@ export function DashboardPage() {
       <main className="flex-1 w-full max-w-content-max-width mx-auto px-gutter-desktop py-space-xl space-y-space-2xl">
         <HeroOverview project={currentProject} regions={catalog.regions} />
 
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-space-xl items-start">
+          <LotViewer project={currentProject} />
+          <RoomSchedule project={currentProject} />
+        </div>
+
         <MaterialCatalog catalog={catalog} project={currentProject} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
@@ -83,18 +88,13 @@ export function DashboardPage() {
           <IGOCalculator project={currentProject} />
         </div>
 
+        <RoomBudget />
+
         <Timeline
           project={currentProject}
           currentPhase={currentPhase >= 0 ? currentPhase : 1}
           onToggleTask={toggleTask}
         />
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-space-xl items-start">
-          <RoomSchedule project={currentProject} />
-          <LotViewer project={currentProject} />
-        </div>
-
-        <RoomBudget />
 
         <MCPConsole />
 

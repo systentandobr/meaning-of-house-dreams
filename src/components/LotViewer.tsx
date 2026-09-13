@@ -4,6 +4,7 @@ import { LotSettingsDrawer } from './LotSettingsDrawer';
 import { useProject } from '../hooks/useProject';
 import { useAppStore } from '../store/appStore';
 import type { Project, Room } from '../domain/project';
+import { FloorSelector } from './FloorSelector';
 
 const LotViewer3D = lazy(() => import('./LotViewer3D').then((m) => ({ default: m.LotViewer3D })));
 
@@ -34,6 +35,25 @@ const WIND_DIRECTIONS: Record<string, { label: string; angle: number }> = {
   'Centro-Oeste': { label: 'NE ➔ SO (Vento Nordeste)', angle: 45 },
   Norte: { label: 'E ➔ O (Vento Leste)', angle: 90 },
 };
+
+function truncateRoomLabel(value: string, maxChars: number) {
+  if (value.length <= maxChars) return value;
+  return `${value.slice(0, Math.max(1, maxChars - 1)).trimEnd()}…`;
+}
+
+function roomLabelLayout(room: Room, width: number, height: number, zoom: number) {
+  // Labels are rendered inside the zoomed SVG, so counteract the zoom and cap
+  // the size: labels must aid alignment, never cover walls or nearby rooms.
+  const fontSize = Math.max(3.6, Math.min(6, Math.min(width / 10, height / 5.5))) / zoom;
+  const maxChars = Math.max(4, Math.floor((width - 8) / (fontSize * 0.62)));
+
+  return {
+    fontSize,
+    name: truncateRoomLabel(room.name, maxChars),
+    canShowName: width >= 24 && height >= 16,
+    canShowArea: width >= 42 && height >= 34,
+  };
+}
 
 interface SnapResult {
   x: number;
@@ -248,7 +268,6 @@ export default function LotViewer({ project }: LotViewerProps) {
     selectedRoomId,
     setSelectedRoomId,
     activeFloor,
-    setActiveFloor,
     magneticSnapEnabled,
     setMagneticSnapEnabled,
     wallThickness,
@@ -290,11 +309,6 @@ export default function LotViewer({ project }: LotViewerProps) {
     if (activeFloor === 0) return allRooms.filter((r) => r.floor === 0);
     return allRooms.filter((r) => r.floor === activeFloor);
   }, [allRooms, activeFloor]);
-
-  // Has second floor
-  const hasSecondFloor = useMemo(() => {
-    return allRooms.some((r) => r.floor === 2) || (currentProject.stories || 1) > 1;
-  }, [allRooms, currentProject.stories]);
 
   // Conflicts calculation
   const conflicts = useMemo(() => {
@@ -616,41 +630,7 @@ export default function LotViewer({ project }: LotViewerProps) {
       <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-surface-container-low rounded-xl border border-outline-variant">
         {/* Floor Tabs & Wall Thickness Setup */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <button
-            onClick={() => setActiveFloor(1)}
-            className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold flex items-center gap-1.5 transition-colors ${
-              activeFloor === 1
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'text-on-surface-variant hover:bg-surface-container'
-            }`}
-          >
-            <Icon name="home" className="text-[16px]" />
-            Térreo
-          </button>
-          {hasSecondFloor && (
-            <button
-              onClick={() => setActiveFloor(2)}
-              className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold flex items-center gap-1.5 transition-colors ${
-                activeFloor === 2
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:bg-surface-container'
-              }`}
-            >
-              <Icon name="apartment" className="text-[16px]" />
-              2º Pavimento
-            </button>
-          )}
-          <button
-            onClick={() => setActiveFloor(0)}
-            className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold flex items-center gap-1.5 transition-colors ${
-              activeFloor === 0
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'text-on-surface-variant hover:bg-surface-container'
-            }`}
-          >
-            <Icon name="yard" className="text-[16px]" />
-            Áreas Externas
-          </button>
+          <FloorSelector project={currentProject} compact />
 
           {/* Quick Wall Thickness Selector */}
           <div className="hidden sm:flex items-center gap-1 pl-2 border-l border-outline-variant/60 text-label-sm">
@@ -836,6 +816,7 @@ export default function LotViewer({ project }: LotViewerProps) {
                 const hasConflict = conflicts.has(room.id);
                 const isSelected = selectedRoomId === room.id;
                 const isHovered = hoveredRoom?.id === room.id && !dragging && !resizing;
+                const label = roomLabelLayout(room, w, h, zoom);
 
                 return (
                   <g
@@ -868,29 +849,34 @@ export default function LotViewer({ project }: LotViewerProps) {
                       }}
                     />
 
-                    {/* Room name and dimensions */}
-                    {w > 30 && h > 18 && (
-                      <>
+                    {/* Compact labels are clipped to their own room. Full dimensions remain in the status bar/card. */}
+                    {label.canShowName && (
+                      <g className="select-none pointer-events-none">
+                        <clipPath id={`room-label-${room.id}`}>
+                          <rect x={x + 3} y={y + 3} width={Math.max(0, w - 6)} height={Math.max(0, h - 6)} rx="1" />
+                        </clipPath>
+                        <g clipPath={`url(#room-label-${room.id})`}>
                         <text
                           x={x + 4}
-                          y={y + 13}
-                          fontSize={w < 50 ? '8' : '9.5'}
+                          y={y + label.fontSize + 5}
+                          fontSize={label.fontSize}
                           fontWeight="600"
                           fill="#1e1b15"
-                          className="select-none pointer-events-none"
                         >
-                          {room.name}
+                          {label.name}
                         </text>
-                        <text
-                          x={x + 4}
-                          y={y + 24}
-                          fontSize={w < 50 ? '7.5' : '8.5'}
-                          fill="#454840"
-                          className="select-none pointer-events-none"
-                        >
-                          {Math.round(room.area_m2)}m² ({room.width_m}×{room.depth_m}m)
-                        </text>
-                      </>
+                        {label.canShowArea && (
+                          <text
+                            x={x + 4}
+                            y={y + label.fontSize * 2 + 7}
+                            fontSize={Math.max(3.2, label.fontSize * 0.82)}
+                            fill="#454840"
+                          >
+                            {Math.round(room.area_m2)} m²
+                          </text>
+                        )}
+                        </g>
+                      </g>
                     )}
 
                     {/* Resize handle on selected room */}

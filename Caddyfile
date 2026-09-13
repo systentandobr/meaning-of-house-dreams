@@ -1,0 +1,23 @@
+{
+  admin off
+  persist_config off
+  auto_https off
+  servers { trusted_proxies static private_ranges 100.0.0.0/8 }
+}
+
+:{$PORT:8080} {
+  encode gzip
+  @health path /health
+  respond @health "ok" 200
+
+  # Browser requests use /gateway/api/...; Caddy removes /gateway and reaches
+  # the private Go service through Railway networking. No public API URL or
+  # permissive browser CORS is required in production.
+  handle_path /gateway/* {
+    reverse_proxy {$API_URL:http://casa-api.railway.internal:8889}
+  }
+
+  root * /app/dist
+  try_files {path} /index.html
+  file_server
+}

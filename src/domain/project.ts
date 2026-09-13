@@ -102,6 +102,10 @@ export interface Discovery {
   priorities: string[];
   dream_text: string;
 }
+export interface MaterialPreferences { sustainability_weight: number; budget_weight: number; regional_availability: boolean; deadline_weight: number; aesthetic_style: string; max_unit_price?: number; }
+export interface ConstructionProfile { construction_method: string; finish_standard: string; material_preferences: MaterialPreferences; }
+export interface FloorSpec { number: number; name: string; kind: string; max_area_m2: number; requires_stairs: boolean; }
+export interface RoomRequirement { type: string; subtype?: string; min: number; max: number; floor: number; min_area_m2?: number; }
 
 export interface Project {
   id: string;
@@ -129,6 +133,9 @@ export interface Project {
 
   discovery: Discovery;
   room_schedule: RoomSchedule;
+  profile: ConstructionProfile;
+  floors: FloorSpec[];
+  room_requirements: RoomRequirement[];
 
   materials: ProjectMaterial[];
 
@@ -165,6 +172,7 @@ export interface CreateProjectInput {
   stories?: number;
   rooms?: number;
   has_garden?: boolean;
+  profile?: ConstructionProfile;
 }
 
 export interface ProjectRepository {
