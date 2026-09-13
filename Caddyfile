@@ -21,9 +21,14 @@
   # Browser requests use /gateway/api/...; Caddy removes /gateway and proxies
   # to the Go API. The services live in different Railway projects, so the
   # upstream is the public API domain (private *.railway.internal DNS does not
-  # resolve across projects).
+  # resolve across projects). `header_up Host` is required: without it Caddy
+  # forwards the original Host (casadossonhos.systentando.com) and the Railway
+  # edge routes the request back to this same web service, where the already
+  # rewritten path falls into file_server and POST gets a 405.
   handle_path /gateway/* {
-    reverse_proxy {$API_URL:https://casa-api-production-4d11.up.railway.app}
+    reverse_proxy {$API_URL:https://casa-api-production-4d11.up.railway.app} {
+      header_up Host {upstream_hostport}
+    }
   }
 
   handle {
