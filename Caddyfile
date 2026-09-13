@@ -9,17 +9,26 @@
 
 :{$PORT:8080} {
   encode gzip
-  @health path /health
-  respond @health "ok" 200
 
-  # Browser requests use /gateway/api/...; Caddy removes /gateway and reaches
-  # the private Go service through Railway networking. No public API URL or
-  # permissive browser CORS is required in production.
-  handle_path /gateway/* {
-    reverse_proxy {$API_URL:http://casa-api.railway.internal:8889}
+  # NOTE: `handle` blocks are mutually exclusive and are matched before the
+  # fallback block below runs `try_files`. Keeping `try_files` inside the
+  # fallback `handle` is required — at site level it rewrites /gateway/* to
+  # /index.html before the proxy route is evaluated (breaks POST with 405).
+  handle /health {
+    respond "ok" 200
   }
 
-  root * /app/dist
-  try_files {path} /index.html
-  file_server
+  # Browser requests use /gateway/api/...; Caddy removes /gateway and proxies
+  # to the Go API. The services live in different Railway projects, so the
+  # upstream is the public API domain (private *.railway.internal DNS does not
+  # resolve across projects).
+  handle_path /gateway/* {
+    reverse_proxy {$API_URL:https://casa-api-production-4d11.up.railway.app}
+  }
+
+  handle {
+    root * /app/dist
+    try_files {path} /index.html
+    file_server
+  }
 }

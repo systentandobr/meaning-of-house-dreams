@@ -1,0 +1,13 @@
+#!/bin/sh
+# Pre-push hook: typecheck + build antes de publicar (CI/CD faz deploy do push)
+echo "Running pre-push validation..."
+
+pnpm run build
+
+if [ $? -ne 0 ]; then
+    echo "Build failed! Please fix the errors before pushing."
+    exit 1
+fi
+
+echo "Build passed!"
+exit 0

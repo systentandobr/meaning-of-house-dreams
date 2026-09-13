@@ -8,7 +8,7 @@
     "restartPolicyMaxRetries": 5
   },
   "environments": {
-    "production": { "variables": { "VITE_API_URL": "/gateway", "API_URL": "http://casa-api.railway.internal:8889" } },
-    "staging": { "variables": { "VITE_API_URL": "/gateway", "API_URL": "http://casa-api.railway.internal:8889" } }
+    "production": { "variables": { "VITE_API_URL": "/gateway", "API_URL": "https://casa-api-production-4d11.up.railway.app" } },
+    "staging": { "variables": { "VITE_API_URL": "/gateway", "API_URL": "https://casa-api-production-4d11.up.railway.app" } }
   }
 }

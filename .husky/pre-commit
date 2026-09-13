@@ -1,0 +1,7 @@
+#!/bin/sh
+# Husky pre-commit — casa-dos-sonhos
+
+echo "🔒 Running security audit..."
+node scripts/security-audit.cjs
+
+echo "✅ Pre-commit security checks passed!"
