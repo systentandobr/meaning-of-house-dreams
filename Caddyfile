@@ -26,8 +26,9 @@
   # edge routes the request back to this same web service, where the already
   # rewritten path falls into file_server and POST gets a 405.
   handle_path /gateway/* {
-    reverse_proxy {$API_URL:https://casa-api-production-4d11.up.railway.app} {
+    reverse_proxy {$SENTINEL_GUARD_URL:{$API_URL:https://casa-api-production-4d11.up.railway.app}} {
       header_up Host {upstream_hostport}
+      header_up X-Sentinel-App "casa-dos-sonhos"
     }
   }
 
