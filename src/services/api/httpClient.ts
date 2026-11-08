@@ -9,24 +9,38 @@ export interface ApiResponse<T> {
   status?: number;
 }
 
+export interface ApiFieldIssue {
+  field: string;
+  code: string;
+  message: string;
+  severity: 'error' | 'warning';
+}
+
 export class HttpError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  /** Structured validation issues when the backend answers 422. */
+  issues: ApiFieldIssue[];
+  constructor(message: string, status: number, issues: ApiFieldIssue[] = []) {
     super(message);
     this.status = status;
+    this.issues = issues;
   }
 }
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let message = `HTTP ${res.status}`;
+    let issues: ApiFieldIssue[] = [];
     try {
       const body = await res.json();
       message = body.error || message;
+      if (Array.isArray(body.issues)) {
+        issues = body.issues;
+      }
     } catch {
       /* ignore */
     }
-    throw new HttpError(message, res.status);
+    throw new HttpError(message, res.status, issues);
   }
   return res.json() as Promise<T>;
 }

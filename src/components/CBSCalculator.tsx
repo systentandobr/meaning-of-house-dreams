@@ -6,22 +6,16 @@ interface CBSCalculatorProps {
 }
 
 export function CBSCalculator({ project }: CBSCalculatorProps) {
-  // Dynamic calculation derived from project and materials
-  const area = project.area_m2 || 160;
-  const budget = project.budget > 0 ? project.budget : 250000;
-  const budgetPerM2 = budget / area;
-  const conventional = 3850;
-  const delta = budgetPerM2 - conventional;
-
-  // CBS score boosts savings
-  const cbsMultiplier = 1 + (project.cbs || 70) / 100;
-  const baseEconomyM2 = 720 * cbsMultiplier;
-  const economy15 = Math.round(area * baseEconomyM2);
-  const paybackYears = delta > 0 ? Math.max(2, Math.round((delta / (baseEconomyM2 / 15)) * 10) / 10) : 3.5;
-
-  const solar = Math.round(economy15 * 0.52);
-  const water = Math.round(economy15 * 0.28);
-  const durability = economy15 - solar - water;
+  // Everything below is backend-computed in project.studies.sustainability —
+  // the component renders; it does not estimate.
+  const sus = project.studies?.sustainability;
+  const economy15 = Math.round(sus?.savings_15y.total ?? 0);
+  const solar = Math.round(sus?.savings_15y.solar ?? 0);
+  const water = Math.round(sus?.savings_15y.water ?? 0);
+  const durability = Math.round(sus?.savings_15y.durability ?? 0);
+  const paybackYears = sus?.payback_years ?? 0;
+  const conventional = sus?.conventional_cost_per_m2 ?? 0;
+  const budgetPerM2 = sus?.project_cost_per_m2 ?? 0;
 
   const materialsCount = project.materials?.length || project.selected_material_ids?.length || 0;
 
@@ -42,7 +36,7 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full bg-primary text-on-primary text-label-sm font-label-sm font-bold shadow-sm">
-            Score {project.cbs ? project.cbs.toFixed(1) : '78.5'}
+            Score {(sus?.cbs_average ?? project.cbs ?? 0).toFixed(1)}
           </span>
         </div>
       </div>
@@ -50,6 +44,12 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
       <p className="text-body-md font-body-md text-on-surface-variant leading-relaxed">
         Análise de retorno financeiro ponderado: o investimento em tecnologias passivas e {materialsCount} materiais de baixo impacto amortizado pela economia contínua em energia, água e manutenção.
       </p>
+
+      {!sus && (
+        <p className="p-3 rounded-lg bg-surface-container border border-outline-variant text-body-sm text-on-surface-variant">
+          Dossiê de engenharia ainda não disponível para este projeto — os valores aparecem após o cálculo do backend.
+        </p>
+      )}
 
       <div className="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant space-y-4 shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between sm:items-baseline gap-2">
@@ -64,7 +64,7 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
           <div className="sm:text-right">
             <span className="text-label-sm font-label-sm text-on-surface-variant font-medium">Payback Amortizado</span>
             <div className="text-headline-md font-headline-md text-secondary font-bold">
-              {paybackYears} anos
+              {paybackYears > 0 ? `${paybackYears} anos` : '—'}
             </div>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
         <div className="p-3.5 rounded-xl bg-surface-container border border-outline-variant/60">
           <span className="text-label-sm font-label-sm text-on-surface-variant block font-medium">Alvenaria Convencional</span>
           <div className="text-title-lg font-title-lg font-bold text-on-surface mt-0.5">
-            R$ {conventional.toLocaleString('pt-BR')} / m²
+            {conventional > 0 ? `R$ ${conventional.toLocaleString('pt-BR')} / m²` : '—'}
           </div>
           <p className="text-body-sm font-body-sm text-error mt-1 flex items-center gap-1">
             <Icon name="north_east" className="text-[16px]" />
@@ -108,11 +108,13 @@ export function CBSCalculator({ project }: CBSCalculatorProps) {
             Projeto {project.name} (Bioclimático)
           </span>
           <div className="text-title-lg font-title-lg font-bold text-primary mt-0.5">
-            R$ {Math.round(budgetPerM2).toLocaleString('pt-BR')} / m²
+            {budgetPerM2 > 0 ? `R$ ${Math.round(budgetPerM2).toLocaleString('pt-BR')} / m²` : '—'}
           </div>
           <p className="text-body-sm font-body-sm text-primary font-medium mt-1 flex items-center gap-1">
             <Icon name="south_east" className="text-[16px]" />
-            Economia contínua de ~R$ {Math.round(economy15 / 15).toLocaleString('pt-BR')}/ano
+            {economy15 > 0
+              ? `Economia contínua de ~R$ ${Math.round(economy15 / 15).toLocaleString('pt-BR')}/ano`
+              : 'Economia calculada pelo dossiê do backend'}
           </p>
         </div>
       </div>

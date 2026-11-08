@@ -337,11 +337,24 @@ export default function LotViewer({ project }: LotViewerProps) {
     return set;
   }, [rooms, currentProject.front_setback, currentProject.side_setback, currentProject.back_setback, currentProject.lot_width, currentProject.lot_depth]);
 
-  // Metrics
-  const lotArea = currentProject.lot_area_m2 || currentProject.lot_width * currentProject.lot_depth;
+  // Metrics — authoritative values come from the backend site study;
+  // floorArea is a display-only sum of the rooms shown on the active floor.
+  const site = currentProject.studies?.site;
+  const lotArea = site?.lot_area_m2 ?? currentProject.lot_area_m2 ?? 0;
   const floorArea = rooms.reduce((sum, r) => sum + r.area_m2, 0);
-  const occupancyRate = lotArea > 0 ? Math.round((currentProject.built_area_m2 / lotArea) * 100) : 0;
-  const permeableRate = lotArea > 0 ? Math.round(((currentProject.garden_area_m2 || lotArea * 0.3) / lotArea) * 100) : 30;
+  const occupancyRate = Math.round(site?.occupancy_rate_pct ?? 0);
+  const permeableRate = Math.round(site?.permeable_rate_pct ?? 0);
+  const layoutIssues = currentProject.room_schedule?.issues ?? [];
+  // Rooms flagged by backend-issued layout issues get the conflict highlight
+  // too — merged with the transient drag-time geometry check.
+  const issueRoomIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const i of layoutIssues) {
+      if (i.room_id) set.add(i.room_id);
+      if (i.related_room_id) set.add(i.related_room_id);
+    }
+    return set;
+  }, [layoutIssues]);
 
   const windInfo = WIND_DIRECTIONS[currentProject.region] || WIND_DIRECTIONS['Sudeste'];
 
@@ -527,12 +540,8 @@ export default function LotViewer({ project }: LotViewerProps) {
   function handleRotate(roomId: string) {
     const updated = allRooms.map((r) => {
       if (r.id === roomId) {
-        return {
-          ...r,
-          width_m: r.depth_m,
-          depth_m: r.width_m,
-          area_m2: Math.round(r.width_m * r.depth_m * 100) / 100,
-        };
+        // Rotation preserves the area — backend recomputes it authoritatively.
+        return { ...r, width_m: r.depth_m, depth_m: r.width_m };
       }
       return r;
     });
@@ -676,6 +685,19 @@ export default function LotViewer({ project }: LotViewerProps) {
         </div>
       </div>
 
+      {layoutIssues.length > 0 && (
+        <ul className="p-3 rounded-lg bg-secondary-fixed/40 border border-outline-variant text-body-sm space-y-1">
+          {layoutIssues.map((issue, i) => (
+            <li
+              key={i}
+              className={issue.severity === 'error' ? 'text-error' : 'text-on-surface-variant'}
+            >
+              {issue.severity === 'error' ? '⛔' : '⚠️'} {issue.message}
+            </li>
+          ))}
+        </ul>
+      )}
+
       {view === '2d' ? (
         <div className="relative overflow-hidden rounded-xl border border-outline-variant bg-[#fdfbf7] dark:bg-[#1a1816]">
           {/* Zoom & Pan Overlay Toolbar */}
@@ -813,7 +835,7 @@ export default function LotViewer({ project }: LotViewerProps) {
                 const y = toSvgPy(room.y);
                 const w = room.width_m * scale;
                 const h = room.depth_m * scale;
-                const hasConflict = conflicts.has(room.id);
+                const hasConflict = conflicts.has(room.id) || issueRoomIds.has(room.id);
                 const isSelected = selectedRoomId === room.id;
                 const isHovered = hoveredRoom?.id === room.id && !dragging && !resizing;
                 const label = roomLabelLayout(room, w, h, zoom);

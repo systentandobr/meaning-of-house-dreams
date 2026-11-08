@@ -7,6 +7,11 @@ export const API_ENDPOINTS = {
   location: '/api/v1/location',
   suppliersSearch: '/api/v1/suppliers/search',
   projects: '/api/v1/projects',
+  projectsValidate: '/api/v1/projects/validate',
+  preview: '/api/v1/preview',
   projectDetail: (id: string) => `/api/v1/projects/${id}`,
   projectSimulate: (id: string) => `/api/v1/projects/${id}/simulate`,
+  projectStudies: (id: string) => `/api/v1/projects/${id}/studies`,
+  projectPlans: (id: string) => `/api/v1/projects/${id}/plans`,
+  projectPlanSvg: (id: string, floor: number) => `/api/v1/projects/${id}/plan.svg?floor=${floor}`,
 } as const;

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
 import { useProject } from '../hooks/useProject';
 import { useAppStore } from '../store/appStore';
+import { useSitePreview } from '../hooks/usePreview';
 import type { Project } from '../domain/project';
 
 interface LotSettingsDrawerProps {
@@ -29,7 +30,21 @@ export function LotSettingsDrawer({ project, open, onClose }: LotSettingsDrawerP
   const [side, setSide] = useState(project.side_setback || 1.5);
   const [back, setBack] = useState(project.back_setback || 1.5);
 
-  const totalArea = Math.round(width * depth * (shape === 'triangular' ? 0.5 : 1));
+  // Wall thickness is a project field owned by the backend — sync the local
+  // store value from the persisted project when the drawer opens.
+  useEffect(() => {
+    if (open && project.wall_thickness) setWallThickness(project.wall_thickness);
+  }, [open, project.wall_thickness, setWallThickness]);
+
+  // Live area preview comes from the backend — it owns the shape factors.
+  const { site: previewSite } = useSitePreview({
+    region: project.region,
+    lotWidth: width,
+    lotDepth: depth,
+    lotShape: shape,
+    stories: project.stories || 1,
+  });
+  const totalArea = previewSite ? Math.round(previewSite.lot_area_m2) : Math.round(project.lot_area_m2 || 0);
 
   async function handleSimulate() {
     setLoading(true);
@@ -41,6 +56,7 @@ export function LotSettingsDrawer({ project, open, onClose }: LotSettingsDrawerP
         front_setback: front,
         side_setback: side,
         back_setback: back,
+        wall_thickness: wallThickness,
       });
       setDraftProject(p);
       if (!isSimulation) startSimulation(p);
@@ -61,6 +77,7 @@ export function LotSettingsDrawer({ project, open, onClose }: LotSettingsDrawerP
         front_setback: front,
         side_setback: side,
         back_setback: back,
+        wall_thickness: wallThickness,
       });
       onClose();
     } catch (e: any) {

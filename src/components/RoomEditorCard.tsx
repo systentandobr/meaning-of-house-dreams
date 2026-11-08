@@ -39,7 +39,11 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
 
   const materials = catalog?.materials ?? [];
 
-  const roomCost = (room.materials ?? []).reduce((sum, m) => sum + (m.total || m.quantity * m.unit_price), 0);
+  // Per-room cost comes from the backend budget study; room.area_m2 and
+  // material totals are also backend-derived after each update.
+  const roomCost =
+    project.studies?.budget?.per_room.find((r) => r.room_id === room.id)?.total
+    ?? (room.materials ?? []).reduce((sum, m) => sum + (m.total || 0), 0);
 
   async function updateRoom(updates: Partial<Room>) {
     const updatedRooms = project.room_schedule.rooms.map((r) =>
@@ -57,7 +61,8 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
   }
 
   async function setDimension(w: number, d: number) {
-    await updateRoom({ width_m: w, depth_m: d, area_m2: Math.round(w * d * 100) / 100 });
+    // Raw dimensions only — the backend recomputes area_m2.
+    await updateRoom({ width_m: w, depth_m: d });
   }
 
   async function assignMaterial(materialId: string) {
@@ -85,16 +90,10 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
 
   async function updateMaterialQty(materialId: string, qty: number) {
     if (qty < 0) return;
-    const updatedMats = (room.materials ?? []).map((m) => {
-      if (m.material_id === materialId) {
-        return {
-          ...m,
-          quantity: qty,
-          total: Math.round(qty * m.unit_price * 100) / 100,
-        };
-      }
-      return m;
-    });
+    // Send the raw quantity — the backend reprices material totals.
+    const updatedMats = (room.materials ?? []).map((m) =>
+      m.material_id === materialId ? { ...m, quantity: qty } : m
+    );
     await updateRoom({ materials: updatedMats });
   }
 
@@ -240,7 +239,7 @@ export function RoomEditorCard({ project, room }: RoomEditorCardProps) {
                       />
                     </div>
                     <span className="text-xs font-bold text-secondary">
-                      R$ {(m.total || m.quantity * m.unit_price).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                      R$ {(m.total || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 </div>

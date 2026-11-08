@@ -7,6 +7,7 @@ import { IGOCalculator } from '../components/IGOCalculator';
 import { Timeline } from '../components/Timeline';
 import { RoomSchedule } from '../components/RoomSchedule';
 import LotViewer from '../components/LotViewer';
+import { PlanViewer } from '../components/PlanViewer';
 import { RoomBudget } from '../components/RoomBudget';
 import { MCPConsole } from '../components/MCPConsole';
 import { ProjectWizard } from '../components/ProjectWizard';
@@ -80,6 +81,8 @@ export function DashboardPage() {
           <LotViewer project={currentProject} />
           <RoomSchedule project={currentProject} />
         </div>
+
+        <PlanViewer project={currentProject} />
 
         <MaterialCatalog catalog={catalog} project={currentProject} />
 

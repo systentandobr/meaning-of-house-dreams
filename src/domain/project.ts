@@ -1,5 +1,7 @@
 // Project domain: pure types and repository contract.
 
+import type { ProjectStudies } from './study';
+
 export interface Task {
   id: string;
   name: string;
@@ -19,6 +21,8 @@ export interface Phase {
   sustainability_notes: string;
   estimated_budget?: number;
   spent_budget?: number;
+  /** 0–100, derived by the backend from task completion. */
+  progress_pct?: number;
 }
 
 export interface RoomMaterial {
@@ -56,6 +60,20 @@ export interface ProjectMaterial {
   room_id?: string;
 }
 
+/** Structured layout finding produced by the backend layout engine — carries
+ * the room/floor so the viewer can highlight the exact element. */
+export interface LayoutIssue {
+  code: string;
+  severity: 'error' | 'warning' | 'info';
+  room_id?: string;
+  room_name?: string;
+  floor?: number;
+  related_room_id?: string;
+  related_room_name?: string;
+  message: string;
+  reference?: string;
+}
+
 export interface RoomSchedule {
   rooms: Room[];
   total_area_m2: number;
@@ -64,6 +82,8 @@ export interface RoomSchedule {
   outdoor_area_m2: number;
   circulation_area_m2: number;
   notes: string;
+  /** Structured layout conflicts produced by the backend layout engine. */
+  issues?: LayoutIssue[];
 }
 
 export interface Discovery {
@@ -140,10 +160,15 @@ export interface Project {
   materials: ProjectMaterial[];
 
   area_m2: number;
+  /** Computed estimate (from the budget study). */
   budget: number;
+  /** What the user typed — preserved so coverage can be shown. */
+  declared_budget?: number;
   stories: number;
   rooms: number;
   has_garden: boolean;
+  /** Wall thickness (m) used by the backend floor-plan generator. */
+  wall_thickness?: number;
   dreams: string;
 
   selected_material_ids: string[];
@@ -152,6 +177,11 @@ export interface Project {
   igo: number;
   notes: string;
   status: string;
+  /**
+   * Engineering dossier computed by the backend — recomputed on every read.
+   * The frontend renders it; it never recomputes it.
+   */
+  studies?: ProjectStudies;
 }
 
 export interface CreateProjectInput {
@@ -164,6 +194,9 @@ export interface CreateProjectInput {
   lot_width?: number;
   lot_depth?: number;
   lot_shape?: string;
+  front_setback?: number;
+  side_setback?: number;
+  back_setback?: number;
   floor_area_m2?: number;
   dreams?: string;
   discovery?: Discovery;

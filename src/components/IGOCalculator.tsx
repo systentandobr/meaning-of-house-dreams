@@ -1,56 +1,23 @@
-import { useState } from 'react';
 import { Icon } from './Icon';
-import { calculationService } from '../services/calculationService';
 import type { Project } from '../domain/project';
 
 interface IGOCalculatorProps {
   project: Project;
-  onRecalculated?: (score: number) => void;
 }
 
-export function IGOCalculator({ project, onRecalculated }: IGOCalculatorProps) {
-  const [area, setArea] = useState(project.area_m2 || 185);
-  const [auto, setAuto] = useState(75);
-  const [local, setLocal] = useState(85);
-  const [contingency, setContingency] = useState(8);
-  const [score, setScore] = useState(project.igo);
-  const [computing, setComputing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const SEALS: Record<string, { label: string; color: string; bg: string }> = {
+  ouro: { label: 'Selo Ouro', color: 'text-secondary', bg: 'bg-secondary-fixed text-on-secondary-fixed' },
+  prata: { label: 'Selo Prata', color: 'text-primary', bg: 'bg-primary-fixed text-on-primary-fixed' },
+  bronze: { label: 'Selo Bronze', color: 'text-on-surface-variant', bg: 'bg-surface-container text-on-surface' },
+  revisao: { label: 'Requer Revisão', color: 'text-error', bg: 'bg-error-container text-on-error-container' },
+};
 
-  async function recompute() {
-    setComputing(true);
-    setError(null);
-    try {
-      const locationDim = Math.min(100, local + 10);
-      const costDim = Math.max(20, 100 - contingency * 2);
-      const timeDim = Math.min(100, 60 + (auto - 30));
-      const sustainabilityDim = auto;
-      const qualityDim = Math.min(100, 60 + local / 3);
-      const res = await calculationService.calculateIGO({
-        location: locationDim,
-        cost: costDim,
-        time: timeDim,
-        sustainability: sustainabilityDim,
-        quality: qualityDim,
-      });
-      const s = typeof res.score === 'number' ? res.score : project.igo;
-      setScore(s);
-      onRecalculated?.(s);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setComputing(false);
-    }
-  }
-
-  const selo =
-    score >= 85
-      ? { label: 'Selo Ouro', color: 'text-secondary', bg: 'bg-secondary-fixed text-on-secondary-fixed' }
-      : score >= 70
-        ? { label: 'Selo Prata', color: 'text-primary', bg: 'bg-primary-fixed text-on-primary-fixed' }
-        : score >= 50
-          ? { label: 'Selo Bronze', color: 'text-on-surface-variant', bg: 'bg-surface-container text-on-surface' }
-          : { label: 'Requer Revisão', color: 'text-error', bg: 'bg-error-container text-on-error-container' };
+export function IGOCalculator({ project }: IGOCalculatorProps) {
+  // IGO and every dimension are derived by the backend viability study from
+  // real project signals — this component only renders them.
+  const viability = project.studies?.viability;
+  const score = viability?.igo ?? project.igo ?? 0;
+  const selo = SEALS[viability?.seal ?? ''] ?? SEALS[score >= 85 ? 'ouro' : score >= 70 ? 'prata' : score >= 50 ? 'bronze' : 'revisao'];
 
   return (
     <section
@@ -96,115 +63,44 @@ export function IGOCalculator({ project, onRecalculated }: IGOCalculatorProps) {
           </span>
           <h4 className="text-title-md font-title-md font-semibold text-on-surface mt-1">Viabilidade do Projeto</h4>
           <p className="text-body-sm font-body-sm text-on-surface-variant">
-            Índice de Gestão Orçamentária da Obra (protótipo educacional).
+            Índice de Gestão Orçamentária da Obra — derivado dos dados reais do projeto.
           </p>
         </div>
       </div>
 
-      <div className="space-y-space-md">
-        <Slider
-          label="Área Construída Total"
-          value={area}
-          min={80}
-          max={450}
-          suffix=" m²"
-          marks={['80 m² (Chalé)', '250 m²', '450 m² (Quinta)']}
-          onChange={setArea}
-        />
-        <Slider
-          label="Autossuficiência (Energia + Água)"
-          value={auto}
-          min={30}
-          max={100}
-          suffix="%"
-          marks={['30% (Híbrido)', '75% (Zero Carbon)', '100% (Off-Grid)']}
-          onChange={setAuto}
-        />
-        <Slider
-          label="Mão de Obra e Ofícios Locais"
-          value={local}
-          min={0}
-          max={100}
-          suffix="%"
-          marks={['Regional restrito', 'Comunidade ativa (>80%)']}
-          onChange={setLocal}
-        />
-
-        <div className="pt-2 flex items-center justify-between bg-surface-container p-3 rounded-lg border border-outline-variant">
-          <div>
-            <span className="text-label-md font-label-md font-semibold text-on-surface block">
-              Margem de Contingência Verde
-            </span>
-            <span className="text-body-sm font-body-sm text-on-surface-variant">
-              Reserva para flutuações e clima
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setContingency((c) => Math.max(0, c - 1))}
-              className="w-7 h-7 rounded bg-surface-container-lowest border border-outline-variant flex items-center justify-center font-bold text-on-surface hover:bg-surface-variant transition-colors"
-            >
-              -
-            </button>
-            <span className="text-label-md font-label-md font-bold text-on-surface w-8 text-center">
-              {contingency}%
-            </span>
-            <button
-              onClick={() => setContingency((c) => Math.min(25, c + 1))}
-              className="w-7 h-7 rounded bg-surface-container-lowest border border-outline-variant flex items-center justify-center font-bold text-on-surface hover:bg-surface-variant transition-colors"
-            >
-              +
-            </button>
-          </div>
+      {viability ? (
+        <div className="space-y-3">
+          {viability.dimensions.map((d) => (
+            <div key={d.id} className="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/60">
+              <div className="flex items-center justify-between text-label-md font-label-md">
+                <span className="font-semibold text-on-surface">{d.label}</span>
+                <span className="font-bold text-primary">
+                  {Math.round(d.score)} <span className="text-[10px] font-normal text-on-surface-variant">× {d.weight}</span>
+                </span>
+              </div>
+              <div className="w-full bg-surface-container rounded-full h-1.5 overflow-hidden mt-1.5">
+                <div className="bg-primary h-full rounded-full" style={{ width: `${Math.min(100, d.score)}%` }} />
+              </div>
+              <p className="text-[11px] text-on-surface-variant mt-1.5">{d.derivation}</p>
+            </div>
+          ))}
         </div>
+      ) : (
+        <p className="p-3 rounded-lg bg-surface-container border border-outline-variant text-body-sm text-on-surface-variant">
+          Dossiê de viabilidade ainda não disponível — o score acima vem do projeto e será detalhado após o cálculo do backend.
+        </p>
+      )}
 
-        <button
-          onClick={recompute}
-          disabled={computing}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-tertiary-container transition-all shadow-sm text-label-md font-label-md font-bold disabled:opacity-60"
-        >
-          <Icon name="autorenew" className="text-[18px]" />
-          {computing ? 'Calculando...' : 'Recalcular IGO'}
-        </button>
-        {error && <p className="text-body-sm font-body-sm text-error">{error}</p>}
-      </div>
+      {viability && viability.findings.length > 0 && (
+        <ul className="space-y-1.5 pt-1">
+          {viability.findings.map((f, i) => (
+            <li key={i} className="flex items-start gap-2 text-body-sm text-on-surface-variant">
+              <Icon name={f.severity === 'error' ? 'error' : 'info'} className="text-[16px] text-secondary shrink-0 mt-0.5" />
+              <span>{f.message}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
-  );
-}
-
-interface SliderProps {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  suffix: string;
-  marks: string[];
-  onChange: (v: number) => void;
-}
-
-function Slider({ label, value, min, max, suffix, marks, onChange }: SliderProps) {
-  return (
-    <div>
-      <div className="flex justify-between text-label-md font-label-md text-on-surface mb-1.5">
-        <span>{label}</span>
-        <span className="font-bold text-primary">
-          {value}
-          {suffix}
-        </span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full bg-outline-variant h-2 rounded-lg cursor-pointer"
-      />
-      <div className="flex justify-between text-[11px] text-on-surface-variant mt-1 font-medium">
-        {marks.map((m, i) => (
-          <span key={i}>{m}</span>
-        ))}
-      </div>
-    </div>
   );
 }

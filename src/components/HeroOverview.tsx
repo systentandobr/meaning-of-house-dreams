@@ -26,8 +26,9 @@ interface HeroOverviewProps {
 export function HeroOverview({ project, regions }: HeroOverviewProps) {
   const { region, setRegion } = useAppStore();
   const certified = project.selected_material_ids.length;
-  const co2Estimate = (project.area_m2 * 0.076).toFixed(1); // protótipo: ~76kg CO₂/m² vs alvenaria padrão
-  const budgetPerM2 = project.budget > 0 ? project.budget / project.area_m2 : 0;
+  const sus = project.studies?.sustainability;
+  const co2Estimate = sus ? (sus.embodied_co2_kg / 1000).toFixed(1) : '—';
+  const budgetPerM2 = project.studies?.budget?.cost_per_m2 ?? 0;
 
   return (
     <section

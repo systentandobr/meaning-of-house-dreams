@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "vitest run",
     "preview": "vite preview",
     "prepare": "husky",
     "audit:security": "node scripts/security-audit.cjs"
@@ -38,6 +39,7 @@
     "husky": "^9.1.7",
     "oxlint": "^1.79.0",
     "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^5.0.1"
   }
 }

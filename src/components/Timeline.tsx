@@ -34,15 +34,13 @@ function statusBadge(status: Phase['status']) {
 
 export function Timeline({ project, currentPhase, onToggleTask }: TimelineProps) {
   const activePhase = project.phases[currentPhase] || project.phases[0];
-  const totalBudget = project.budget || 250000;
+  // All schedule numbers are backend-derived: project.budget is the computed
+  // estimate, phase.estimated_budget/spent_budget/progress_pct come from the
+  // schedule study and task state.
+  const totalBudget = project.budget || 0;
 
   function handleToggle(phaseId: string, taskId: string, completed: boolean) {
     onToggleTask?.(phaseId, taskId, completed);
-  }
-
-  function physicalProgress(tasks: Phase['tasks']) {
-    if (tasks.length === 0) return 0;
-    return Math.round((tasks.filter((t) => t.completed).length / tasks.length) * 100);
   }
 
   return (
@@ -70,10 +68,10 @@ export function Timeline({ project, currentPhase, onToggleTask }: TimelineProps)
         {project.phases.map((phase, index) => {
           const badge = statusBadge(phase.status);
           const active = index === currentPhase;
-          const physPct = physicalProgress(phase.tasks);
-          const phaseBudget = phase.estimated_budget || Math.round(totalBudget * 0.16);
-          const budgetPct = totalBudget > 0 ? Math.round((phaseBudget / totalBudget) * 100) : 16;
-          const spent = phase.spent_budget || Math.round((physPct / 100) * phaseBudget);
+          const physPct = phase.progress_pct ?? 0;
+          const phaseBudget = phase.estimated_budget || 0;
+          const budgetPct = totalBudget > 0 ? Math.round((phaseBudget / totalBudget) * 100) : 0;
+          const spent = phase.spent_budget || 0;
 
           return (
             <div

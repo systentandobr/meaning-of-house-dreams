@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
+import { useSitePreview } from '../hooks/usePreview';
 import type { CreateProjectInput, Project, Discovery, ConstructionProfile } from '../domain/project';
 
 interface ProjectWizardProps {
@@ -110,22 +111,22 @@ export function ProjectWizard({
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, step]);
 
-  const lotArea = useMemo(() => {
-    const w = Number(lotWidth) || 0;
-    const d = Number(lotDepth) || 0;
-    const base = w * d;
-    if (lotShape === 'triangular') return base * 0.5;
-    if (lotShape === 'irregular') return base * 0.85;
-    return base;
-  }, [lotWidth, lotDepth, lotShape]);
-
-  const suggestions = useMemo(() => {
-    const built = lotArea * 0.45 * 0.88;
-    const garden = lotArea * 0.25;
-    const outdoor = lotArea * 0.30;
-    const floor = built * Number(stories || 1);
-    return { built: Math.round(built), garden: Math.round(garden), outdoor: Math.round(outdoor), floor: Math.round(floor) };
-  }, [lotArea, stories]);
+  // All lot math comes from the backend preview — the wizard never computes
+  // areas locally. Debounced; shows nothing until the backend answers.
+  const { site, issues: previewIssues } = useSitePreview({
+    region: defaultRegion,
+    lotWidth: Number(lotWidth) || 0,
+    lotDepth: Number(lotDepth) || 0,
+    lotShape,
+    stories: Number(stories) || 1,
+  });
+  const lotArea = site?.lot_area_m2 ?? 0;
+  const suggestions = {
+    built: Math.round(site?.built_area_m2 ?? 0),
+    garden: Math.round(site?.garden_area_m2 ?? 0),
+    outdoor: Math.round(site?.outdoor_area_m2 ?? 0),
+    floor: Math.round(site?.floor_area_m2 ?? 0),
+  };
 
   function pushUser(text: string) {
     setMessages((prev) => [...prev, { from: 'user', text }]);
@@ -178,10 +179,10 @@ export function ProjectWizard({
         lot_width: Number(lotWidth) || 0,
         lot_depth: Number(lotDepth) || 0,
         lot_shape: lotShape,
-        floor_area_m2: suggestions.floor,
+        // floor_area_m2 / area_m2 are intentionally omitted — the backend
+        // derives them from the site study.
         dreams: discovery.dream_text,
         discovery,
-        area_m2: suggestions.floor,
         budget: Number(budget) || 0,
         stories: Number(stories) || 1,
         rooms: discovery.bedrooms,
@@ -255,6 +256,7 @@ export function ProjectWizard({
               stories={stories} setStories={setStories}
               budget={budget} setBudget={setBudget}
               lotArea={lotArea}
+              issues={previewIssues}
               onNext={handleLotNext}
             />
           )}
@@ -309,7 +311,7 @@ function StepDream({ dreamText, setDreamText, onSubmit }: any) {
   );
 }
 
-function StepLot({ lotWidth, setLotWidth, lotDepth, setLotDepth, lotShape, setLotShape, stories, setStories, budget, setBudget, lotArea, onNext }: any) {
+function StepLot({ lotWidth, setLotWidth, lotDepth, setLotDepth, lotShape, setLotShape, stories, setStories, budget, setBudget, lotArea, issues, onNext }: any) {
   return (
     <div className="bg-surface-container-low rounded-xl border border-outline-variant p-space-md space-y-4">
       <p className="text-body-md text-on-surface">Vamos desenhar o terreno.</p>
@@ -325,8 +327,17 @@ function StepLot({ lotWidth, setLotWidth, lotDepth, setLotDepth, lotShape, setLo
         <Field label="Orçamento (R$)"><input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full rounded-lg px-3 py-2 border" /></Field>
       </div>
       <div className="p-3 rounded-lg bg-tertiary-fixed/40 border border-primary-fixed text-body-sm">
-        <strong>Área do lote:</strong> {Math.round(lotArea)}m²
+        <strong>Área do lote:</strong> {lotArea > 0 ? `${Math.round(lotArea)}m²` : 'calculando…'}
       </div>
+      {issues && issues.length > 0 && (
+        <ul className="p-3 rounded-lg bg-secondary-fixed/40 border border-outline-variant text-body-sm space-y-1">
+          {issues.map((i: { field: string; message: string; severity: string }, idx: number) => (
+            <li key={idx} className={i.severity === 'error' ? 'text-error' : 'text-on-surface-variant'}>
+              {i.severity === 'error' ? '⛔' : '⚠️'} {i.message}
+            </li>
+          ))}
+        </ul>
+      )}
       <button onClick={onNext} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary shadow-sm font-bold">
         <Icon name="straighten" className="text-[18px]" /> Detalhar cômodos
       </button>

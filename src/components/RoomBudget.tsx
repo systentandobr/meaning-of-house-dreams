@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
 import { useProject } from '../hooks/useProject';
 import { useAppStore } from '../store/appStore';
@@ -12,9 +12,12 @@ export function RoomBudget() {
   const [error, setError] = useState<string | null>(null);
 
   const currentProject = draftProject ?? project;
+  const budget = currentProject?.studies?.budget;
 
+  // Fallback only: legacy responses without the studies dossier still hit
+  // the /estimate endpoint, which runs the same backend engine.
   useEffect(() => {
-    if (!project?.id) return;
+    if (!project?.id || project.studies?.budget) return;
     setLoading(true);
     estimate()
       .then((e) => {
@@ -23,64 +26,30 @@ export function RoomBudget() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [project?.id, project?.updated_at, estimate]);
+  }, [project?.id, project?.updated_at, project?.studies?.budget, estimate]);
 
-  // Derived dynamic room budgets from draftProject if materials are updated
-  const computedEstimates = useMemo(() => {
-    if (!currentProject) return estimates;
-
-    // Check if rooms have materials assigned
-    const rooms = currentProject.room_schedule?.rooms ?? [];
-    const list: RoomEstimate[] = [];
-
-    for (const r of rooms) {
-      if (r.materials && r.materials.length > 0) {
-        const items = r.materials.map((m) => ({
-          description: m.name,
-          material_id: m.material_id,
-          quantity: m.quantity,
-          unit: m.unit,
-          unit_price: m.unit_price,
-          total: m.total || m.quantity * m.unit_price,
-          note: `Material aplicado (${m.category})`,
-        }));
-        const total = items.reduce((s, it) => s + it.total, 0);
-        list.push({
-          room_id: r.id,
-          room_name: r.name,
+  const computedEstimates: RoomEstimate[] = budget
+    ? [
+        ...budget.per_room.map((r) => ({
+          room_id: r.room_id,
+          room_name: r.room_name,
           area_m2: r.area_m2,
-          items,
-          total: Math.round(total * 100) / 100,
-        });
-      }
-    }
+          items: r.items.map((i) => ({ ...i, material_id: i.material_id ?? '', note: i.note ?? '' })),
+          total: r.total,
+        })),
+        ...(budget.groups
+          .filter((g) => g.id === 'materiais_projeto' && g.items.length > 0)
+          .map((g) => ({
+            room_id: 'geral',
+            room_name: g.label,
+            area_m2: currentProject?.area_m2 ?? 0,
+            items: g.items.map((i) => ({ ...i, material_id: i.material_id ?? '', note: i.note ?? '' })),
+            total: g.subtotal,
+          })) as RoomEstimate[]),
+      ]
+    : estimates;
 
-    // Project-level materials
-    if (currentProject.materials && currentProject.materials.length > 0) {
-      const generalItems = currentProject.materials.map((pm) => ({
-        description: pm.name,
-        material_id: pm.material_id,
-        quantity: pm.quantity,
-        unit: pm.unit,
-        unit_price: pm.unit_price,
-        total: pm.total || pm.quantity * pm.unit_price,
-        note: pm.room_id ? 'Vinculado a ambiente' : 'Material geral do projeto',
-      }));
-      const genTotal = generalItems.reduce((s, it) => s + it.total, 0);
-      list.push({
-        room_id: 'geral',
-        room_name: 'Materiais Gerais do Projeto',
-        area_m2: currentProject.area_m2,
-        items: generalItems,
-        total: Math.round(genTotal * 100) / 100,
-      });
-    }
-
-    if (list.length > 0) return list;
-    return estimates;
-  }, [currentProject, estimates]);
-
-  const total = computedEstimates.reduce((sum, e) => sum + e.total, 0) || currentProject?.budget || 0;
+  const total = budget?.total ?? computedEstimates.reduce((sum, e) => sum + e.total, 0);
 
   return (
     <section className="bg-surface-container-low rounded-xl border border-outline-variant p-space-xl space-y-space-md shadow-sm" id="orcamento">
