@@ -29,6 +29,8 @@
     reverse_proxy {$SENTINEL_GUARD_URL:{$API_URL}} {
       header_up Host {upstream_hostport}
       header_up X-Sentinel-App "casa-dos-sonhos"
+      header_up X-Real-IP {client_ip}
+      header_up X-Sentinel-Gateway-Token {$SENTINEL_GATEWAY_TOKEN:}
     }
   }
 
